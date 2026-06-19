@@ -52,7 +52,7 @@ export default function Page() {
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
       id: "default-session",
-      title: "新しいチャット",
+      title: "新規チャット",
       messages: [
         { role: "ai", content: "新規チャットセッションを開始しました。営業用の調べ物（物件検索、重要事項説明の法令確認、地価・都市計画照会など）を入力してください。💻📁", time: "12:01" }
       ],
@@ -66,7 +66,7 @@ export default function Page() {
   const messages = currentSession.messages;
 
   const handleNewChat = (
-    customTitle = "新しいチャット", 
+    customTitle = "新規チャット", 
     customMessage = "新規チャットセッションを開始しました。営業用の調べ物（物件検索、重要事項説明の法令確認、地価・都市計画照会など）を入力してください。💻📁",
     customTag = ""
   ) => {
@@ -221,7 +221,7 @@ export default function Page() {
                 <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
                   <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
                 </div>
-                新しいチャット
+                新規チャット
               </button>
               
               <div className="relative shrink-0">
@@ -364,7 +364,7 @@ export default function Page() {
               <button 
                 onClick={() => handleNewChat()}
                 className="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all shadow-sm cursor-pointer"
-                title="新しいチャット"
+                title="新規チャット"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"/></svg>
               </button>
@@ -446,7 +446,7 @@ export default function Page() {
                           handleSend();
                         }
                       }}
-                      placeholder="質問を入力してください（Enterキーで送信）"
+                      placeholder="お手伝いできることはありますか？（Enterキーで送信）"
                       className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
                     />
                     <button
@@ -517,7 +517,7 @@ export default function Page() {
                             handleSend();
                           }
                         }}
-                        placeholder={isLoading ? "AIが考え中..." : "質問を入力してください（Enterキーで送信）"}
+                        placeholder={isLoading ? "AIが考え中..." : "お手伝いできることはありますか？（Enterキーで送信）"}
                         disabled={isLoading}
                         className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base disabled:bg-transparent font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
                       />
