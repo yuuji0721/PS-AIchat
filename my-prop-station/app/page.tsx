@@ -386,14 +386,12 @@ export default function Page() {
         {/* ヘッダー */}
         <header className="h-[72px] bg-[#f4f7f9] border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-3">
-            {!isSidebarOpen && (
-              <button 
-                className="p-2 -ml-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center cursor-pointer md:hidden" 
-                onClick={() => setIsSidebarOpen(true)}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-              </button>
-            )}
+            <button
+              className="p-2 -ml-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center cursor-pointer md:hidden"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
             
             <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 hidden sm:flex">
               <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0">
