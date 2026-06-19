@@ -451,12 +451,6 @@ export default function Page() {
                     {typedGreeting}<span className={`inline-block w-0.5 h-7 bg-blue-600 ml-1 align-middle ${greetingDone ? "hidden" : "animate-pulse"}`}></span>
                   </h2>
                   <p className={`text-sm text-gray-500 font-medium transition-opacity duration-500 ${greetingDone ? "opacity-100" : "opacity-0"}`}>営業に必要な調べ物、お手伝い致します！</p>
-                  <div className={`flex flex-wrap justify-center gap-2 transition-opacity duration-500 delay-200 ${greetingDone ? "opacity-100" : "opacity-0"}`}>
-                    <span className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full border border-blue-100">🏠 物件検索</span>
-                    <span className="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-full border border-emerald-100">📋 重要事項説明</span>
-                    <span className="px-3 py-1.5 bg-amber-50 text-amber-600 text-xs font-semibold rounded-full border border-amber-100">💴 地価照会</span>
-                    <span className="px-3 py-1.5 bg-purple-50 text-purple-600 text-xs font-semibold rounded-full border border-purple-100">🏢 都市計画</span>
-                  </div>
                 </div>
 
                 <div className={`w-full max-w-2xl space-y-3 transition-opacity duration-500 delay-300 ${greetingDone ? "opacity-100" : "opacity-0"}`}>
@@ -482,9 +476,12 @@ export default function Page() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
                     </button>
                   </div>
-                  <div className="flex justify-center gap-2">
-                    <button onClick={() => handleNewChat("役所調査", "役所調査のサポートモードを起動しました。調査したい市区町村や、確認したい項目を教えてください。🏢", "役所調査")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">🏢 役所調査サポート</button>
-                    <button onClick={() => handleNewChat("地価検索", "地価検索モードを起動しました。調べたい土地の住所を入力してください。💴", "地価検索")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">💴 周辺地価検索</button>
+                  <div className="w-full">
+                    <p className="text-[11px] text-gray-400 font-semibold mb-2">⚡ クイックコマンド</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleNewChat("役所調査", "役所調査のサポートモードを起動しました。調査したい市区町村や、確認したい項目を教えてください。🏢", "役所調査")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">🏢 役所調査サポート</button>
+                      <button onClick={() => handleNewChat("地価検索", "地価検索モードを起動しました。調べたい土地の住所を入力してください。💴", "地価検索")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">💴 周辺地価検索</button>
+                    </div>
                   </div>
                 </div>
               </div>
