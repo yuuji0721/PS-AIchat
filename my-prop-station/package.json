@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "openapi": "npx @redocly/cli preview-docs docs/reinfolib-openapi.yaml"
+    "openapi:prop-lib": "npx @redocly/cli preview-docs docs/reinfolib-openapi.yaml"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
