@@ -179,7 +179,7 @@ export default function Page() {
       ========================================= */}
       <aside className={`
         fixed md:relative z-50 inset-y-0 left-0 bg-white border-r border-gray-100 flex flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0
-        ${isSidebarOpen ? "translate-x-0 w-[280px] shadow-2xl md:shadow-none" : "-translate-x-full w-0 md:translate-x-0 md:w-[72px] md:shadow-none"}
+        ${isSidebarOpen ? "translate-x-0 w-[310px] shadow-2xl md:shadow-none" : "-translate-x-full w-0 md:translate-x-0 md:w-[72px] md:shadow-none"}
       `}>
         
         {isSidebarOpen ? (
@@ -213,7 +213,7 @@ export default function Page() {
         </div>
 
             {/* メニューエリア */}
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col min-w-[280px] space-y-3.5 bg-white">
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col min-w-[310px] space-y-3.5 bg-white">
               <button 
                 onClick={() => handleNewChat()}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl font-bold text-sm transition-all hover:bg-blue-100/60 shrink-0 cursor-pointer"
