@@ -190,10 +190,10 @@ export default function Page() {
           
           {/* 左側のかたまり：ロゴとテキスト */}
           <div className="flex items-center gap-2">
-            <img src="/logo.webp" alt="Prop-Station" className="w-6 h-6 object-contain" />
+            <img src="/logo.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
             <div className="flex flex-col">
-              <h1 className="font-bold text-[#1a365d] text-[21px] tracking-tight leading-none">
-                Prop-Station
+              <h1 className="font-bold text-[21px] tracking-tight leading-none">
+                <span className="text-blue-600">Prop</span><span className="text-[#1a365d]">-Station</span>
               </h1>
               <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100/50 px-2 py-0.5 rounded-md w-max mt-1 text-center">
                 不動産専用AIchat
@@ -289,8 +289,7 @@ export default function Page() {
                   <div className="flex-1 overflow-y-auto space-y-1 max-h-[180px] md:max-h-none pr-1">
                     {filteredSessions.map((session) => (
                       <div key={session.id} onClick={() => { setCurrentSessionId(session.id); if (window.innerWidth < 768) setIsSidebarOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm text-left font-medium transition-all group cursor-pointer ${session.id === currentSessionId ? "bg-gray-50 text-blue-700 font-semibold border border-gray-100" : "text-gray-600 hover:bg-gray-50/60"}`}>
-                        <div className="flex items-center gap-2.5 truncate flex-1 mr-2">
-                          <span className="text-sm shrink-0">💬</span>
+                        <div className="flex items-center truncate flex-1 mr-2">
                           <div className="truncate flex-1 flex flex-col">
                             <span className="truncate">{session.title}</span>
                             {session.tag && <span className="text-[10px] text-blue-600 bg-blue-50 border border-blue-100/50 px-1.5 py-0.2 rounded-md w-max mt-0.5 font-semibold">#{session.tag}</span>}
@@ -354,7 +353,7 @@ export default function Page() {
                 className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
                 title="サイドバーを開く"
               >
-                <img src="/logo.webp" alt="Prop-Station" className="w-6 h-6 object-contain" />
+                <img src="/logo.webp" alt="Prop-Station" className="w-7 h-7 object-contain" />
               </button>
 
               <div className="w-6 h-[1px] bg-gray-100"></div>
@@ -465,7 +464,7 @@ export default function Page() {
                     {messages.map((msg, index) => (
                       <div key={index} className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 overflow-hidden ${msg.role === "user" ? "bg-blue-100 border border-gray-200" : "bg-white border border-gray-200 text-blue-600"}`}>
-                          {msg.role === "user" ? <img src={userImage} className="w-full h-full object-cover" /> : <img src="/logo.webp" className="w-4 h-4 object-contain" />}
+                          {msg.role === "user" ? <img src={userImage} className="w-full h-full object-cover" /> : <img src="/logo.webp" className="w-5 h-5 object-contain" />}
                         </div>
                         <div className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} max-w-[80%]`}>
                           <div className={`p-4 md:p-5 rounded-3xl shadow-sm text-sm md:text-base leading-relaxed whitespace-pre-wrap font-['Zen_Maru_Gothic',_sans-serif] ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none border border-blue-700" : "bg-white text-gray-800 rounded-tl-none border border-gray-100"}`}>
@@ -486,7 +485,7 @@ export default function Page() {
                     {isLoading && (
                       <div className="flex gap-4">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 bg-white border border-gray-200">
-                          <img src="/logo.webp" className="w-4 h-4 object-contain" />
+                          <img src="/logo.webp" className="w-5 h-5 object-contain" />
                         </div>
                         <div className="flex flex-col items-start max-w-[80%]">
                           <div className="p-3 md:p-4 rounded-3xl bg-white border border-gray-100 shadow-sm rounded-tl-none flex items-center gap-3">
