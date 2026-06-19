@@ -1,0 +1,1649 @@
+openapi: "3.0.3"
+info:
+  title: 不動産情報ライブラリ API
+  description: |
+    国土交通省が提供する不動産情報ライブラリの公開API仕様書。
+    不動産価格情報、都市計画情報、防災情報、周辺施設情報などをプログラムから取得できる。
+
+    ## 認証
+    全てのリクエストに `Ocp-Apim-Subscription-Key` ヘッダーが必要。
+    APIキーは https://www.reinfolib.mlit.go.jp/api/request/ から申請（審査約5営業日）。
+
+    ## レスポンスのエンコーディング
+    全レスポンスは gzip 圧縮されている。クライアント側で `Accept-Encoding: gzip` ヘッダーを付与するか、
+    curl の `--compressed` フラグを使用すること。
+
+    ## XYZタイル座標
+    多くのAPIはXYZタイル座標方式でデータを取得する。
+    緯度経度からタイル座標への変換は以下の計算式で行う:
+    ```
+    x = floor((lng + 180) / 360 * 2^zoom)
+    y = floor((1 - log(tan(lat * π / 180) + 1 / cos(lat * π / 180)) / π) / 2 * 2^zoom)
+    ```
+    タイル座標の確認ツール: https://maps.gsi.go.jp/development/tileCoordCheck.html
+  version: "1.0.0"
+  contact:
+    name: 国土交通省 不動産情報ライブラリ
+    url: https://www.reinfolib.mlit.go.jp/
+  license:
+    name: 政府標準利用規約（第2.0版）準拠
+    url: https://www.reinfolib.mlit.go.jp/help/termsOfUse/
+
+servers:
+  - url: https://www.reinfolib.mlit.go.jp/ex-api/external
+    description: 本番環境
+
+security:
+  - apiKey: []
+
+tags:
+  - name: 価格情報
+    description: 不動産価格・地価公示・鑑定評価書に関するAPI
+  - name: 市区町村情報
+    description: 都道府県・市区町村マスタデータ
+  - name: 都市計画
+    description: 区域区分・用途地域・立地適正化計画・防火地域
+  - name: 防災・ハザード
+    description: 洪水・高潮・津波・土砂災害・液状化・地すべり
+  - name: 避難施設
+    description: 指定緊急避難場所
+
+# ==============================================================================
+# パス定義
+# ==============================================================================
+paths:
+  # ============================================================================
+  # 価格情報
+  # ============================================================================
+  /XIT001:
+    get:
+      operationId: getTransactionPrices
+      summary: 不動産価格（取引価格・成約価格）情報取得
+      description: |
+        2005年第3四半期以降の不動産取引価格情報、2021年以降の成約価格情報を取得する。
+        area / city / station のいずれか最低1つを指定する必要がある。
+      tags: [価格情報]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - name: year
+          in: query
+          required: true
+          description: 取引年（YYYY形式）。取引価格は2005年以降、成約価格は2021年以降。
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+            example: "2024"
+        - name: quarter
+          in: query
+          required: true
+          description: 四半期（1:Q1〜4:Q4）
+          schema:
+            type: string
+            enum: ["1", "2", "3", "4"]
+            example: "3"
+        - name: area
+          in: query
+          required: false
+          description: 都道府県コード（2桁）。複数指定時はカンマ区切り。area / city / station のいずれか1つは必須。
+          schema:
+            type: string
+            pattern: '^\d{2}(,\d{2})*$'
+            example: "13"
+        - name: city
+          in: query
+          required: false
+          description: 市区町村コード（5桁、全国地方公共団体コードの上5桁）。area / city / station のいずれか1つは必須。
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+            example: "13101"
+        - name: station
+          in: query
+          required: false
+          description: 駅コード（6桁、国土数値情報駅データのグループコード）。area / city / station のいずれか1つは必須。
+          schema:
+            type: string
+            pattern: '^\d{6}$'
+        - name: priceClassification
+          in: query
+          required: false
+          description: 価格情報区分
+          schema:
+            type: string
+            enum: ["01", "02"]
+            description: "01: 取引価格のみ、02: 成約価格のみ、未指定: 両方"
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ja, en]
+            default: ja
+          description: 出力言語
+      responses:
+        "200":
+          description: 取引価格情報リスト（gzip圧縮JSON）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TransactionPrice"
+
+  /XIT002:
+    get:
+      operationId: getMunicipalities
+      summary: 都道府県内市区町村一覧取得
+      description: 指定した都道府県に属する市区町村の一覧を取得する。
+      tags: [市区町村情報]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - name: area
+          in: query
+          required: true
+          description: 都道府県コード（2桁）
+          schema:
+            type: string
+            pattern: '^\d{2}$'
+            example: "13"
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ja, en]
+            default: ja
+      responses:
+        "200":
+          description: 市区町村一覧（gzip圧縮JSON）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Municipality"
+
+  # ============================================================================
+  # 価格ポイント（タイル座標方式）
+  # ============================================================================
+  /XPT001:
+    get:
+      operationId: getTransactionPricePoints
+      summary: 不動産価格ポイント
+      description: |
+        XYZタイル座標で指定した範囲内の不動産取引ポイント（最寄り駅ポイント）を取得する。
+        同一ポイントに複数の取引情報が含まれる場合がある。
+      tags: [価格情報]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+        - name: from
+          in: query
+          required: true
+          description: 取引時期From（YYYYN形式。Nは四半期1〜4）
+          schema:
+            type: string
+            pattern: '^\d{4}[1-4]$'
+            example: "20241"
+        - name: to
+          in: query
+          required: true
+          description: 取引時期To（YYYYN形式）
+          schema:
+            type: string
+            pattern: '^\d{4}[1-4]$'
+            example: "20244"
+        - name: priceClassification
+          in: query
+          required: false
+          description: "価格区分コード（01: 取引価格、02: 成約価格）"
+          schema:
+            type: string
+            enum: ["01", "02"]
+        - name: landTypeCode
+          in: query
+          required: false
+          description: "種類コード（01: 宅地(土地)、02: 宅地(土地建物)、07: 中古マンション等）"
+          schema:
+            type: string
+            enum: ["01", "02", "07"]
+      responses:
+        "200":
+          description: GeoJSON形式の不動産価格ポイント
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+
+  /XPT002:
+    get:
+      operationId: getLandPricePoints
+      summary: 地価公示・地価調査ポイント
+      description: |
+        XYZタイル座標で指定した範囲内の地価公示・地価調査ポイントを取得する。
+        公示地価（毎年1月1日基準）と都道府県地価調査（毎年7月1日基準）の両方を含む。
+      tags: [価格情報]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - name: z
+          in: query
+          required: true
+          description: ズームレベル（13〜15）
+          schema:
+            type: integer
+            minimum: 13
+            maximum: 15
+            example: 14
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+        - name: year
+          in: query
+          required: true
+          description: 対象年（YYYY形式）
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+            example: "2025"
+        - name: priceClassification
+          in: query
+          required: false
+          description: "地価区分（0: 公示のみ、1: 調査のみ、未指定: 両方）"
+          schema:
+            type: string
+            enum: ["0", "1"]
+        - name: useCategoryCode
+          in: query
+          required: false
+          description: |
+            用途区分コード（複数指定時はカンマ区切り）。
+            00: 住宅地、03: 宅地見込地、05: 商業地、07: 準工業地、
+            09: 工業地、10: 市街化調整区域内現況宅地、
+            13: 市街化調整区域内現況林地（公示のみ）、20: 林地（調査のみ）
+          schema:
+            type: string
+            example: "00,05"
+      responses:
+        "200":
+          description: GeoJSON形式の地価ポイント
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+
+  # ============================================================================
+  # 都市計画
+  # ============================================================================
+  /XKT001:
+    get:
+      operationId: getAreaClassification
+      summary: 都市計画決定GISデータ（区域区分）
+      description: |
+        市街化区域・市街化調整区域・非線引き区域などの区域区分データをタイル座標で取得する。
+      tags: [都市計画]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の区域区分ポリゴン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Polygon
+                      coordinates: [[[139.7, 35.6], [139.8, 35.6], [139.8, 35.7], [139.7, 35.7], [139.7, 35.6]]]
+                    properties:
+                      prefecture: "東京都"
+                      city_code: "13101"
+                      city_name: "千代田区"
+                      kubun_id: 1
+                      area_classification_ja: "市街化区域"
+                      decision_date: "令和3年3月30日"
+                      decision_classification: ""
+                      decision_maker: ""
+                      notice_number: ""
+                      first_decision_date: ""
+                      notice_number_s: ""
+
+  /XKT002:
+    get:
+      operationId: getUseDistrict
+      summary: 都市計画決定GISデータ（用途地域）
+      description: |
+        用途地域（第一種低層住居専用地域〜工業専用地域）のポリゴンデータを取得する。
+        建ぺい率・容積率も含まれる。Prop-Stationの役所調査シートの主要データソース。
+      tags: [都市計画]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の用途地域ポリゴン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Polygon
+                      coordinates: [[[135.2, 34.7], [135.3, 34.7], [135.3, 34.8], [135.2, 34.8], [135.2, 34.7]]]
+                    properties:
+                      youto_id: 11
+                      prefecture: "兵庫県"
+                      city_code: "28100"
+                      city_name: "神戸市"
+                      use_area_ja: "準工業地域"
+                      u_floor_area_ratio_ja: "300%"
+                      u_building_coverage_ratio_ja: "80%"
+                      decision_date: ""
+                      decision_classification: ""
+                      decision_maker: ""
+                      notice_number: ""
+                      first_decision_date: ""
+                      notice_number_s: ""
+
+  /XKT003:
+    get:
+      operationId: getLocationOptimizationPlan
+      summary: 都市計画決定GISデータ（立地適正化計画）
+      description: 居住誘導区域・都市機能誘導区域などの立地適正化計画データを取得する。
+      tags: [都市計画]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の立地適正化計画ポリゴン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+
+  /XKT014:
+    get:
+      operationId: getFirePreventionDistrict
+      summary: 都市計画決定GISデータ（防火地域・準防火地域）
+      description: 防火地域・準防火地域のポリゴンデータを取得する。
+      tags: [都市計画]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の防火地域ポリゴン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Polygon
+                      coordinates: [[[139.6, 35.4], [139.7, 35.4], [139.7, 35.5], [139.6, 35.5], [139.6, 35.4]]]
+                    properties:
+                      fire_prevention_ja: "準防火地域"
+                      kubun_id: 25
+                      prefecture: "神奈川県"
+                      city_code: "14201"
+                      city_name: "横須賀市"
+                      decision_date: "令和3年2月25日"
+                      decision_classification: ""
+                      decision_maker: ""
+                      notice_number: "市告示第29号"
+                      first_decision_date: ""
+                      notice_number_s: ""
+
+  # ============================================================================
+  # 防災・ハザード
+  # ============================================================================
+  /XKT021:
+    get:
+      operationId: getLandslidePreventionArea
+      summary: 国土数値情報（地すべり防止地区）
+      description: 地すべり防止地区のポリゴンデータを取得する。
+      tags: [防災・ハザード]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+        - name: prefectureCode
+          in: query
+          required: false
+          description: 都道府県コード（2桁、カンマ区切りで複数指定可）
+          schema:
+            type: string
+            pattern: '^\d{2}(,\d{2})*$'
+        - name: administrativeAreaCode
+          in: query
+          required: false
+          description: 行政コード（5桁、カンマ区切りで複数指定可）
+          schema:
+            type: string
+            pattern: '^\d{5}(,\d{5})*$'
+      responses:
+        "200":
+          description: GeoJSON形式の地すべり防止地区ポリゴン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+
+  /XKT025:
+    get:
+      operationId: getLiquefactionTendency
+      summary: 液状化発生傾向図
+      description: |
+        地形分類に基づく液状化発生傾向を6段階で評価したメッシュデータを取得する。
+      tags: [防災・ハザード]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の液状化傾向メッシュ
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Polygon
+                      coordinates: [[[139.7, 35.6], [139.71, 35.6], [139.71, 35.61], [139.7, 35.61], [139.7, 35.6]]]
+                    properties:
+                      mesh_code: "5339359931"
+                      topographic_classification_code: 9
+                      topographic_classification_name_ja: "ローム台地"
+                      liquefaction_tendency_level: 5
+                      note: "液状化しにくい"
+
+  /XKT026:
+    get:
+      operationId: getFloodInundationArea
+      summary: 国土数値情報（洪水浸水想定区域）
+      description: |
+        洪水浸水想定区域のポリゴンデータを取得する。
+        一部の大規模・複雑なポリゴンは分割提供のため原典データと形状が一致しない場合がある。
+      tags: [防災・ハザード]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - name: z
+          in: query
+          required: true
+          description: ズームレベル（14〜15）
+          schema:
+            type: integer
+            minimum: 14
+            maximum: 15
+            example: 14
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の洪水浸水想定区域ポリゴン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Polygon
+                      coordinates: [[[136.9, 36.7], [137.0, 36.7], [137.0, 36.8], [136.9, 36.8], [136.9, 36.7]]]
+                    properties:
+                      A31a_201: "8404090001"
+                      A31a_202: "庄川"
+                      A31a_203: "84"
+                      A31a_204: "北陸地方整備局"
+                      A31a_205: 1
+
+  /XKT027:
+    get:
+      operationId: getStormSurgeInundationArea
+      summary: 国土数値情報（高潮浸水想定区域）
+      description: |
+        高潮浸水想定区域のポリゴンデータを取得する。
+        一部の大規模・複雑なポリゴンは分割提供のため原典データと形状が一致しない場合がある。
+      tags: [防災・ハザード]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - name: z
+          in: query
+          required: true
+          description: ズームレベル（13〜15）
+          schema:
+            type: integer
+            minimum: 13
+            maximum: 15
+            example: 13
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の高潮浸水想定区域ポリゴン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Polygon
+                      coordinates: [[[136.5, 34.7], [136.6, 34.7], [136.6, 34.8], [136.5, 34.8], [136.5, 34.7]]]
+                    properties:
+                      A49_001: "三重県"
+                      A49_002: "24"
+                      A49_003: "5m以上10m未満"
+                      target_year: 2021
+
+  /XKT028:
+    get:
+      operationId: getTsunamiInundationArea
+      summary: 国土数値情報（津波浸水想定）
+      description: |
+        津波浸水想定区域のポリゴンデータを取得する。
+        一部の大規模・複雑なポリゴンは分割提供のため原典データと形状が一致しない場合がある。
+      tags: [防災・ハザード]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - name: z
+          in: query
+          required: true
+          description: ズームレベル（14〜15）
+          schema:
+            type: integer
+            minimum: 14
+            maximum: 15
+            example: 14
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の津波浸水想定区域ポリゴン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Polygon
+                      coordinates: [[[139.8, 35.3], [139.9, 35.3], [139.9, 35.4], [139.8, 35.4], [139.8, 35.3]]]
+                    properties:
+                      A40_001: "東京都"
+                      A40_002: "13"
+                      A40_003: "3m以上～5m未満"
+                      target_year: 2023
+
+  /XKT029:
+    get:
+      operationId: getSedimentDisasterWarningArea
+      summary: 国土数値情報（土砂災害警戒区域）
+      description: |
+        土砂災害警戒区域・特別警戒区域のポリゴン/ラインデータを取得する。
+        一部地域ではラインデータを含む。
+      tags: [防災・ハザード]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の土砂災害警戒区域ポリゴン/ライン
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Polygon
+                      coordinates: [[[132.4, 34.4], [132.5, 34.4], [132.5, 34.5], [132.4, 34.5], [132.4, 34.4]]]
+                    properties:
+                      A33_001: 1
+                      A33_002: 1
+                      A33_003: "34"
+                      A33_004: "Ⅱ-1-4279-1"
+                      A33_005: "才ノ原1543(4279-1)"
+                      A33_006: "広島市安佐北区安佐町大字毛木"
+                      A33_007: "2018/03/15"
+                      A33_008: 0
+
+  # ============================================================================
+  # 避難施設
+  # ============================================================================
+  /XGT001:
+    get:
+      operationId: getDesignatedEmergencyEvacuationSites
+      summary: 指定緊急避難場所
+      description: |
+        各市区町村が指定した緊急避難場所のポイントデータを取得する。
+        災害種別ごとの対応フラグ（洪水・崖崩れ・高潮・地震・津波・火事・内水氾濫・火山）を含む。
+        データはリアルタイム同期ではないため、最新情報は各市町村に要確認。
+      tags: [避難施設]
+      parameters:
+        - $ref: "#/components/parameters/apiKeyHeader"
+        - $ref: "#/components/parameters/responseFormat"
+        - $ref: "#/components/parameters/zoomLevel_11_15"
+        - $ref: "#/components/parameters/tileX"
+        - $ref: "#/components/parameters/tileY"
+      responses:
+        "200":
+          description: GeoJSON形式の避難場所ポイント
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GeoJSONFeatureCollection"
+              example:
+                type: FeatureCollection
+                features:
+                  - type: Feature
+                    geometry:
+                      type: Point
+                      coordinates: [132.5, 34.4]
+                    properties:
+                      common_id: "341003-01-001"
+                      prefecture_and_city: "広島県広島市"
+                      facility_name_ja: "広島市民球場跡地"
+                      address_ja: "広島市中区基町5番地"
+                      flood_flag: true
+                      landslide_flag: false
+                      high_tide_flag: true
+                      earthquake_flag: true
+                      tsunami_flag: false
+                      large_fire_flag: true
+                      inland_flooding_flag: true
+                      volcanic_phenomenon_flag: false
+                      same_address_flag: true
+                      remarks: "収容人数：約5,000人"
+
+# ==============================================================================
+# コンポーネント定義
+# ==============================================================================
+components:
+  # ============================================================================
+  # セキュリティスキーム
+  # ============================================================================
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+      description: |
+        不動産情報ライブラリAPI利用申請で発行されたAPIキー。
+        申請先: https://www.reinfolib.mlit.go.jp/api/request/
+        審査期間: 約5営業日
+
+  # ============================================================================
+  # 共通パラメータ
+  # ============================================================================
+  parameters:
+    apiKeyHeader:
+      name: Ocp-Apim-Subscription-Key
+      in: header
+      required: true
+      description: 発行されたAPIキー
+      schema:
+        type: string
+
+    responseFormat:
+      name: response_format
+      in: query
+      required: true
+      description: "応答形式（geojson: GeoJSON形式、pbf: バイナリベクトルタイル形式）"
+      schema:
+        type: string
+        enum: [geojson, pbf]
+        example: geojson
+
+    zoomLevel_11_15:
+      name: z
+      in: query
+      required: true
+      description: ズームレベル（11〜15。値が大きいほど詳細）
+      schema:
+        type: integer
+        minimum: 11
+        maximum: 15
+        example: 14
+
+    tileX:
+      name: x
+      in: query
+      required: true
+      description: XYZタイル座標のX値
+      schema:
+        type: integer
+        example: 14626
+
+    tileY:
+      name: y
+      in: query
+      required: true
+      description: XYZタイル座標のY値
+      schema:
+        type: integer
+        example: 6020
+
+  # ============================================================================
+  # スキーマ定義
+  # ============================================================================
+  schemas:
+    # --------------------------------------------------------------------------
+    # 汎用GeoJSON
+    # --------------------------------------------------------------------------
+    GeoJSONFeatureCollection:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [FeatureCollection]
+        features:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [Feature]
+              geometry:
+                type: object
+                description: GeoJSON Geometry（Point, Polygon, MultiPolygon, LineString等）
+                properties:
+                  type:
+                    type: string
+                    enum: [Point, Polygon, MultiPolygon, LineString, MultiLineString]
+                  coordinates:
+                    description: 座標配列（geometryタイプに応じた構造）
+              properties:
+                type: object
+                description: API固有の属性データ（各APIのレスポンス仕様を参照）
+
+    # --------------------------------------------------------------------------
+    # XIT001: 取引価格情報
+    # --------------------------------------------------------------------------
+    TransactionPrice:
+      type: object
+      description: 不動産取引価格情報の1レコード
+      properties:
+        Type:
+          type: string
+          description: "取引種類（例: 宅地(土地と建物)、中古マンション等）"
+          example: "宅地(土地と建物)"
+        Region:
+          type: string
+          description: "地域分類（例: 住宅地、商業地）"
+          example: "住宅地"
+        MunicipalityCode:
+          type: string
+          description: 市区町村コード
+          example: "13101"
+        Prefecture:
+          type: string
+          description: 都道府県名
+          example: "東京都"
+        Municipality:
+          type: string
+          description: 市区町村名
+          example: "千代田区"
+        DistrictName:
+          type: string
+          description: 地区名
+          example: "飯田橋"
+        TradePrice:
+          type: string
+          description: 取引価格（総額）
+          example: "85000000"
+        PricePerUnit:
+          type: string
+          description: 坪単価
+          example: "1200000"
+        FloorPlan:
+          type: string
+          description: 間取り
+          example: "３ＬＤＫ"
+        Area:
+          type: string
+          description: 面積（平方メートル）
+          example: "85"
+        UnitPrice:
+          type: string
+          description: 単価（平方メートルあたり）
+          example: "1000000"
+        LandShape:
+          type: string
+          description: 土地形状
+          example: "長方形"
+        Frontage:
+          type: string
+          description: 間口（m）
+          example: "8.5"
+        TotalFloorArea:
+          type: string
+          description: 延床面積（平方メートル）
+          example: "120"
+        BuildingYear:
+          type: string
+          description: 建築年
+          example: "平成15年"
+        Structure:
+          type: string
+          description: 建物構造
+          example: "ＲＣ"
+        Use:
+          type: string
+          description: 用途
+          example: "住宅"
+        Purpose:
+          type: string
+          description: 今後の利用目的
+          example: "住宅"
+        Direction:
+          type: string
+          description: 前面道路方位
+          example: "南"
+        Classification:
+          type: string
+          description: 前面道路種類
+          example: "市道"
+        Breadth:
+          type: string
+          description: 前面道路幅員（m）
+          example: "6.0"
+        CityPlanning:
+          type: string
+          description: 都市計画区分
+          example: "第一種住居地域"
+        CoverageRatio:
+          type: string
+          description: 建蔽率（%）
+          example: "60"
+        FloorAreaRatio:
+          type: string
+          description: 容積率（%）
+          example: "200"
+        Period:
+          type: string
+          description: 取引時点
+          example: "2024年第3四半期"
+        Renovation:
+          type: string
+          description: 改装有無
+          example: "未改装"
+        Remarks:
+          type: string
+          description: 取引事情等
+        PriceCategory:
+          type: string
+          description: 価格情報区分
+          example: "取引価格"
+        DistrictCode:
+          type: string
+          description: 地区コード（データ更新で変更される可能性あり）
+
+    # --------------------------------------------------------------------------
+    # XIT002: 市区町村
+    # --------------------------------------------------------------------------
+    Municipality:
+      type: object
+      description: 市区町村情報
+      properties:
+        id:
+          type: string
+          description: 市区町村コード（5桁）
+          example: "13101"
+        name:
+          type: string
+          description: 市区町村名
+          example: "千代田区"
+
+    # --------------------------------------------------------------------------
+    # XPT001: 不動産価格ポイント属性
+    # --------------------------------------------------------------------------
+    TransactionPricePointProperties:
+      type: object
+      description: 不動産価格ポイントの属性データ
+      properties:
+        price_information_category_name_ja:
+          type: string
+          description: 価格区分名
+          example: "成約価格情報"
+        prefecture_name_ja:
+          type: string
+          description: 都道府県名
+          example: "北海道"
+        city_name_ja:
+          type: string
+          description: 市区町村名
+          example: "札幌市中央区"
+        district_name_ja:
+          type: string
+          description: 地区名
+          example: "南１条西"
+        u_transaction_price_total_ja:
+          type: string
+          description: 取引価格総額
+          example: "4,000万円"
+        u_unit_price_per_tsubo_ja:
+          type: string
+          description: 坪単価
+        floor_plan_name_ja:
+          type: string
+          description: 間取り
+          example: "３ＬＤＫ"
+        u_area_ja:
+          type: string
+          description: 面積
+          example: "90㎡"
+        u_transaction_price_unit_price_square_meter_ja:
+          type: string
+          description: 平方メートル単価
+        u_building_total_floor_area_ja:
+          type: string
+          description: 建物延床面積
+        u_construction_year_ja:
+          type: string
+          description: 建築年
+          example: "1999年"
+        building_structure_name_ja:
+          type: string
+          description: 建物構造
+          example: "ＲＣ"
+        land_use_name_ja:
+          type: string
+          description: 用途地域名
+          example: "近隣商業地域"
+        point_in_time_name_ja:
+          type: string
+          description: 取引時点
+          example: "2025年第2四半期"
+        land_type_name_ja:
+          type: string
+          description: 取引種類
+          example: "中古マンション等"
+
+    # --------------------------------------------------------------------------
+    # XPT002: 地価公示ポイント属性
+    # --------------------------------------------------------------------------
+    LandPricePointProperties:
+      type: object
+      description: 地価公示・地価調査ポイントの属性データ（全44項目）
+      properties:
+        point_id:
+          type: integer
+          description: 地点ID
+          example: 3000032
+        target_year_name_ja:
+          type: string
+          description: 対象年
+          example: "令和7年7月1日"
+        land_price_type:
+          type: integer
+          description: "地価区分（0: 公示、1: 調査）"
+          example: 1
+        prefecture_code:
+          type: string
+          description: 都道府県コード
+          example: "01"
+        prefecture_name_ja:
+          type: string
+          description: 都道府県名
+          example: "北海道"
+        city_code:
+          type: string
+          description: 市区町村コード
+          example: "01101"
+        use_category_name_ja:
+          type: string
+          description: 用途区分名
+          example: "商業地"
+        standard_lot_number_ja:
+          type: string
+          description: 標準地/基準地番号
+          example: "札幌中央5-2"
+        city_county_name_ja:
+          type: string
+          description: 市郡名
+          example: "札幌市"
+        ward_town_village_name_ja:
+          type: string
+          description: 区町村名
+          example: "中央区"
+        place_name_ja:
+          type: string
+          description: 地名
+          example: "札幌中央"
+        location_number_ja:
+          type: string
+          description: 所在及び地番
+          example: "南２条西９丁目１番２"
+        u_current_years_price_ja:
+          type: string
+          description: 当年価格
+          example: "3,100,000(円/㎡)"
+        last_years_price:
+          type: integer
+          description: 前年価格（円/㎡）
+          example: 2820000
+        year_on_year_change_rate:
+          type: string
+          description: 対前年変動率（%）
+          example: "7.6"
+        u_cadastral_ja:
+          type: string
+          description: 地積
+          example: "537(㎡)"
+        frontage_ratio:
+          type: integer
+          description: 間口比率
+          example: 10
+        depth_ratio:
+          type: integer
+          description: 奥行き比率
+          example: 12
+        building_structure_name_ja:
+          type: string
+          description: 建物構造
+          example: "SRC（鉄骨鉄筋コンクリート造）"
+        u_ground_hierarchy_ja:
+          type: string
+          description: 地上階層
+          example: "9F"
+        u_underground_hierarchy_ja:
+          type: string
+          description: 地下階層
+          example: "B2"
+        front_road_name_ja:
+          type: string
+          description: 前面道路区分
+          example: "市区町村道"
+        front_road_azimuth_name_ja:
+          type: string
+          description: 前面道路方位
+          example: "北"
+        front_road_width:
+          type: integer
+          description: 前面道路幅員（×0.1m単位）
+          example: 200
+        front_road_pavement_condition:
+          type: string
+          description: 前面道路舗装状況
+          example: "1"
+        side_road_azimuth_name_ja:
+          type: string
+          description: 側道方位
+          example: "西"
+        side_road_name_ja:
+          type: string
+          description: 側道区分
+          example: "側道"
+        gas_supply_availability:
+          type: boolean
+          description: ガス供給の有無
+          example: true
+        water_supply_availability:
+          type: boolean
+          description: 水道供給の有無
+          example: true
+        sewer_supply_availability:
+          type: boolean
+          description: 下水道の有無
+          example: true
+        nearest_station_name_ja:
+          type: string
+          description: 最寄り駅名
+          example: "地下鉄大通"
+        proximity_to_transportation_facilitites:
+          type: integer
+          description: 交通施設近接区分
+          example: 0
+        u_road_distance_to_nearest_station_name_ja:
+          type: string
+          description: 最寄り駅までの道路距離
+          example: "150m"
+        usage_status_name_ja:
+          type: string
+          description: 利用現況
+          example: "事務所"
+        current_usage_status_of_surrounding_land_name_ja:
+          type: string
+          description: 周辺土地利用現況
+          example: "中高層事務所ビルが建ち並ぶ"
+        area_division_name_ja:
+          type: string
+          description: 区域区分
+          example: "市街化区域"
+        regulations_use_category_name_ja:
+          type: string
+          description: 法規制・用途区分
+          example: "商業地域"
+        regulations_altitude_district_name_ja:
+          type: string
+          description: 法規制・高度地区
+        regulations_fireproof_name_ja:
+          type: string
+          description: 法規制・防火地域
+          example: "防火地域"
+        u_regulations_building_coverage_ratio_ja:
+          type: string
+          description: 法規制・建蔽率
+          example: "80(%)"
+        u_regulations_floor_area_ratio_ja:
+          type: string
+          description: 法規制・容積率
+          example: "800(%)"
+        regulations_forest_law_name_ja:
+          type: string
+          description: 法規制・森林法
+        regulations_park_law_name_ja:
+          type: string
+          description: 法規制・公園法
+        pause_flag:
+          type: integer
+          description: "休止フラグ（0: 継続、1: 休止）"
+          example: 0
+        location:
+          type: string
+          description: 所在及び地番（詳細）
+          example: "北海道札幌市中央区大通西６丁目６番１"
+        shape:
+          type: string
+          description: 形状（間口：奥行き）
+          example: "(1.0：1.2)"
+        front_road_condition:
+          type: string
+          description: 前面道路の状況
+          example: "北　20.0m　市区町村道"
+        side_road_condition:
+          type: string
+          description: その他接面道路
+          example: "西　側道"
+
+    # --------------------------------------------------------------------------
+    # XKT001: 区域区分属性
+    # --------------------------------------------------------------------------
+    AreaClassificationProperties:
+      type: object
+      description: 区域区分の属性データ
+      properties:
+        prefecture:
+          type: string
+          description: 都道府県名
+          example: "東京都"
+        city_code:
+          type: string
+          description: 市区町村コード
+          example: "13101"
+        city_name:
+          type: string
+          description: 市区町村名
+          example: "千代田区"
+        kubun_id:
+          type: integer
+          description: 区分コード
+        area_classification_ja:
+          type: string
+          description: 都市計画区域/区域区分
+          example: "市街化区域"
+        decision_date:
+          type: string
+          description: 最終告示日
+        decision_classification:
+          type: string
+          description: 設定区分
+        decision_maker:
+          type: string
+          description: 設定者名
+        notice_number:
+          type: string
+          description: 最終告示番号
+        first_decision_date:
+          type: string
+          description: 当初決定日
+        notice_number_s:
+          type: string
+          description: 当初告示番号
+
+    # --------------------------------------------------------------------------
+    # XKT002: 用途地域属性
+    # --------------------------------------------------------------------------
+    UseDistrictProperties:
+      type: object
+      description: 用途地域の属性データ
+      properties:
+        youto_id:
+          type: integer
+          description: 用途地域分類コード
+          example: 11
+        prefecture:
+          type: string
+          description: 都道府県名
+        city_code:
+          type: string
+          description: 市区町村コード
+        city_name:
+          type: string
+          description: 市区町村名
+        use_area_ja:
+          type: string
+          description: 用途地域名
+          example: "第一種住居地域"
+        u_floor_area_ratio_ja:
+          type: string
+          description: 容積率
+          example: "300%"
+        u_building_coverage_ratio_ja:
+          type: string
+          description: 建蔽率
+          example: "80%"
+        decision_date:
+          type: string
+          description: 最終告示日
+        decision_classification:
+          type: string
+          description: 設定区分
+        decision_maker:
+          type: string
+          description: 設定者名
+        notice_number:
+          type: string
+          description: 最終告示番号
+        first_decision_date:
+          type: string
+          description: 当初決定日
+        notice_number_s:
+          type: string
+          description: 当初告示番号
+
+    # --------------------------------------------------------------------------
+    # XKT003: 立地適正化計画属性
+    # --------------------------------------------------------------------------
+    LocationOptimizationPlanProperties:
+      type: object
+      description: 立地適正化計画の属性データ
+      properties:
+        prefecture:
+          type: string
+          description: 都道府県名
+        city_code:
+          type: string
+          description: 行政区域コード
+        city_name:
+          type: string
+          description: 市区町村名
+        kubun_id:
+          type: integer
+          description: 区域コード
+        kubun_name_ja:
+          type: string
+          description: 区域名
+        area_classification_ja:
+          type: string
+          description: 区域区分
+        decision_date:
+          type: string
+          description: 最終告示日
+        decision_classification:
+          type: string
+          description: 設定区分
+        decision_maker:
+          type: string
+          description: 設定者名
+        notice_number:
+          type: string
+          description: 最終告示番号
+        first_decision_date:
+          type: string
+          description: 当初決定日
+        notice_number_s:
+          type: string
+          description: 当初告示番号
+
+    # --------------------------------------------------------------------------
+    # XKT014: 防火地域属性
+    # --------------------------------------------------------------------------
+    FirePreventionProperties:
+      type: object
+      description: 防火・準防火地域の属性データ
+      properties:
+        fire_prevention_ja:
+          type: string
+          description: 防火・準防火地域名
+          example: "準防火地域"
+        kubun_id:
+          type: integer
+          description: 区分コード
+          example: 25
+        prefecture:
+          type: string
+          description: 都道府県名
+        city_code:
+          type: string
+          description: 市区町村コード
+        city_name:
+          type: string
+          description: 市区町村名
+        decision_date:
+          type: string
+          description: 最終告示日
+        decision_classification:
+          type: string
+          description: 設定区分
+        decision_maker:
+          type: string
+          description: 設定者名
+        notice_number:
+          type: string
+          description: 最終告示番号
+        first_decision_date:
+          type: string
+          description: 当初決定日
+        notice_number_s:
+          type: string
+          description: 当初告示番号
+
+    # --------------------------------------------------------------------------
+    # XKT021: 地すべり防止地区属性
+    # --------------------------------------------------------------------------
+    LandslidePreventionProperties:
+      type: object
+      description: 地すべり防止地区の属性データ
+      properties:
+        prefecture_code:
+          type: string
+          description: 都道府県コード
+          example: "22"
+        prefecture_name:
+          type: string
+          description: 都道府県名
+          example: "静岡県"
+        group_code:
+          type: string
+          description: グループコード
+          example: "22100"
+        city_name:
+          type: string
+          description: 市区町村名
+          example: "静岡市"
+        region_name:
+          type: string
+          description: 地区名
+          example: "寺尾"
+        address:
+          type: string
+          description: 住所
+          example: "庵原郡由比町寺尾"
+        notice_date:
+          type: string
+          description: 告示日
+          example: "1986/08/02"
+        notice_number:
+          type: string
+          description: 告示番号
+          example: "579"
+        landslide_area:
+          type: string
+          description: 地すべり区域面積
+          example: "0.0(ha)"
+        charge_ministry_code:
+          type: integer
+          description: 所管省庁コード
+          example: 3
+        charge_ministry_name:
+          type: string
+          description: 所管省庁名
+          example: "林野庁"
+
+    # --------------------------------------------------------------------------
+    # XKT025: 液状化傾向属性
+    # --------------------------------------------------------------------------
+    LiquefactionTendencyProperties:
+      type: object
+      description: 液状化発生傾向の属性データ
+      properties:
+        mesh_code:
+          type: string
+          description: メッシュコード
+          example: "5339359931"
+        topographic_classification_code:
+          type: integer
+          description: 微地形区分コード（28区分）
+          example: 9
+        topographic_classification_name_ja:
+          type: string
+          description: 微地形区分名
+          example: "ローム台地"
+        liquefaction_tendency_level:
+          type: integer
+          description: 液状化発生傾向の強弱（6段階）
+          example: 5
+        note:
+          type: string
+          description: 説明
+          example: "液状化しにくい"
+
+    # --------------------------------------------------------------------------
+    # XKT026: 洪水浸水想定属性
+    # --------------------------------------------------------------------------
+    FloodInundationProperties:
+      type: object
+      description: 洪水浸水想定区域の属性データ
+      properties:
+        A31a_201:
+          type: string
+          description: 河川番号
+          example: "8404090001"
+        A31a_202:
+          type: string
+          description: 河川名
+          example: "庄川"
+        A31a_203:
+          type: string
+          description: 河川管理番号
+          example: "84"
+        A31a_204:
+          type: string
+          description: 河川管理者
+          example: "北陸地方整備局"
+        A31a_205:
+          type: integer
+          description: 浸水深ランク
+          example: 1
+
+    # --------------------------------------------------------------------------
+    # XKT027: 高潮浸水想定属性
+    # --------------------------------------------------------------------------
+    StormSurgeInundationProperties:
+      type: object
+      description: 高潮浸水想定区域の属性データ
+      properties:
+        A49_001:
+          type: string
+          description: 都道府県名
+          example: "三重県"
+        A49_002:
+          type: string
+          description: 都道府県コード
+          example: "24"
+        A49_003:
+          type: string
+          description: 浸水深区分
+          example: "5m以上10m未満"
+        target_year:
+          type: integer
+          description: 対象年
+          example: 2021
+
+    # --------------------------------------------------------------------------
+    # XKT028: 津波浸水想定属性
+    # --------------------------------------------------------------------------
+    TsunamiInundationProperties:
+      type: object
+      description: 津波浸水想定区域の属性データ
+      properties:
+        A40_001:
+          type: string
+          description: 都道府県名
+          example: "東京都"
+        A40_002:
+          type: string
+          description: 都道府県コード
+          example: "13"
+        A40_003:
+          type: string
+          description: 津波浸水深の区分
+          example: "3m以上～5m未満"
+        target_year:
+          type: integer
+          description: 対象年
+          example: 2023
+
+    # --------------------------------------------------------------------------
+    # XKT029: 土砂災害警戒区域属性
+    # --------------------------------------------------------------------------
+    SedimentDisasterProperties:
+      type: object
+      description: 土砂災害警戒区域の属性データ
+      properties:
+        A33_001:
+          type: integer
+          description: "現象の種類コード（1: 急傾斜地の崩壊、2: 土石流、3: 地滑り）"
+          example: 1
+        A33_002:
+          type: integer
+          description: "区域区分（1: 警戒区域、2: 特別警戒区域）"
+          example: 1
+        A33_003:
+          type: string
+          description: 都道府県コード
+          example: "34"
+        A33_004:
+          type: string
+          description: 区域番号
+          example: "Ⅱ-1-4279-1"
+        A33_005:
+          type: string
+          description: 区域名
+          example: "才ノ原1543(4279-1)"
+        A33_006:
+          type: string
+          description: 所在地
+          example: "広島市安佐北区安佐町大字毛木"
+        A33_007:
+          type: string
+          description: 公示日
+          example: "2018/03/15"
+        A33_008:
+          type: integer
+          description: "特別警戒未指定フラグ（0: 指定済み、1: 未指定）"
+          example: 0
+
+    # --------------------------------------------------------------------------
+    # XGT001: 避難場所属性
+    # --------------------------------------------------------------------------
+    EvacuationSiteProperties:
+      type: object
+      description: 指定緊急避難場所の属性データ
+      properties:
+        common_id:
+          type: string
+          description: 共通ID
+          example: "341003-01-001"
+        prefecture_and_city:
+          type: string
+          description: 都道府県名及び市町村名
+          example: "広島県広島市"
+        facility_name_ja:
+          type: string
+          description: 施設・場所名
+          example: "広島市民球場跡地"
+        address_ja:
+          type: string
+          description: 住所
+          example: "広島市中区基町5番地"
+        flood_flag:
+          type: boolean
+          description: 洪水対応
+        landslide_flag:
+          type: boolean
+          description: 崖崩れ対応
+        high_tide_flag:
+          type: boolean
+          description: 高潮対応
+        earthquake_flag:
+          type: boolean
+          description: 地震対応
+        tsunami_flag:
+          type: boolean
+          description: 津波対応
+        large_fire_flag:
+          type: boolean
+          description: 火事対応
+        inland_flooding_flag:
+          type: boolean
+          description: 内水氾濫対応
+        volcanic_phenomenon_flag:
+          type: boolean
+          description: 火山現象対応
+        same_address_flag:
+          type: boolean
+          description: 指定避難所との住所同一フラグ
+        remarks:
+          type: string
+          description: 備考（収容人数等）
