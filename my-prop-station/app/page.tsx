@@ -431,7 +431,13 @@ export default function Page() {
                   <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 tracking-tight">
                     こんにちは、{userName}さん
                   </h2>
-                  <p className="text-base text-gray-600 font-semibold text-center max-w-lg leading-relaxed">営業用の調べ物（物件検索、重要事項説明の法令確認、<br className="hidden sm:inline"/>地価・都市計画照会など）を入力してください。</p>
+                  <p className="text-sm text-gray-500 font-medium mb-3">営業に必要な調べ物をお手伝いします</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <span className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full border border-blue-100">🏠 物件検索</span>
+                    <span className="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-full border border-emerald-100">📋 重要事項説明</span>
+                    <span className="px-3 py-1.5 bg-amber-50 text-amber-600 text-xs font-semibold rounded-full border border-amber-100">💴 地価照会</span>
+                    <span className="px-3 py-1.5 bg-purple-50 text-purple-600 text-xs font-semibold rounded-full border border-purple-100">🏢 都市計画</span>
+                  </div>
                 </div>
 
                 <div className="w-full max-w-2xl">
