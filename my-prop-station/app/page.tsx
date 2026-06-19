@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 // メッセージ1件ずつの型
 interface Message {
@@ -23,6 +23,7 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [isToolsOpen, setIsToolsOpen] = useState(true);
   const [isQuickCommandOpen, setIsQuickCommandOpen] = useState(true);
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
 
@@ -51,7 +52,7 @@ export default function Page() {
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
       id: "default-session",
-      title: "新しいチャット",
+      title: "新規チャット",
       messages: [
         { role: "ai", content: "新規チャットセッションを開始しました。営業用の調べ物（物件検索、重要事項説明の法令確認、地価・都市計画照会など）を入力してください。💻📁", time: "12:01" }
       ],
@@ -64,8 +65,26 @@ export default function Page() {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
   const messages = currentSession.messages;
 
+  const [typedGreeting, setTypedGreeting] = useState("");
+  const [greetingDone, setGreetingDone] = useState(false);
+  const isNewChatState = messages.filter(m => m.role === "user").length === 0 && !isLoading && !currentSession.tag;
+  const fullGreeting = `こんにちは、${userName}さん`;
+
+  useEffect(() => {
+    if (!isNewChatState) { setTypedGreeting(""); setGreetingDone(false); return; }
+    setTypedGreeting("");
+    setGreetingDone(false);
+    let i = 0;
+    const timer = setInterval(() => {
+      i++;
+      setTypedGreeting(fullGreeting.slice(0, i));
+      if (i >= fullGreeting.length) { clearInterval(timer); setGreetingDone(true); }
+    }, 80);
+    return () => clearInterval(timer);
+  }, [isNewChatState, fullGreeting]);
+
   const handleNewChat = (
-    customTitle = "新しいチャット", 
+    customTitle = "新規チャット", 
     customMessage = "新規チャットセッションを開始しました。営業用の調べ物（物件検索、重要事項説明の法令確認、地価・都市計画照会など）を入力してください。💻📁",
     customTag = ""
   ) => {
@@ -178,7 +197,7 @@ export default function Page() {
       ========================================= */}
       <aside className={`
         fixed md:relative z-50 inset-y-0 left-0 bg-white border-r border-gray-100 flex flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0
-        ${isSidebarOpen ? "translate-x-0 w-[280px] shadow-2xl md:shadow-none" : "-translate-x-full w-0 md:translate-x-0 md:w-[72px] md:shadow-none"}
+        ${isSidebarOpen ? "translate-x-0 w-[310px] shadow-2xl md:shadow-none" : "-translate-x-full w-0 md:translate-x-0 md:w-[72px] md:shadow-none"}
       `}>
         
         {isSidebarOpen ? (
@@ -188,11 +207,11 @@ export default function Page() {
         <div className="h-[76px] pl-6 pr-3 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
           
           {/* 左側のかたまり：ロゴとテキスト */}
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Prop-Station" className="w-6 h-6 object-contain" />
+          <div className="flex items-center gap-3.5">
+            <img src="/logo-only.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
             <div className="flex flex-col">
-              <h1 className="font-bold text-[#1a365d] text-[21px] tracking-tight leading-none">
-                Prop-Station
+              <h1 className="font-bold text-[21px] tracking-tight leading-none">
+                <span className="text-blue-600">Prop</span><span className="text-[#1a365d]">-Station</span>
               </h1>
               <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100/50 px-2 py-0.5 rounded-md w-max mt-1 text-center">
                 不動産専用AIchat
@@ -201,23 +220,26 @@ export default function Page() {
           </div>
 
           {/* 右側：閉じるボタン */}
-          <button 
+          <button
             className="p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center shrink-0 cursor-pointer"
             onClick={() => setIsSidebarOpen(false)}
             title="サイドバーを閉じる"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6"/><line x1="4" y1="4" x2="4" y2="20" strokeLinecap="round"/></svg>
           </button>
           
         </div>
 
             {/* メニューエリア */}
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col min-w-[280px] space-y-3.5 bg-white">
-              <button 
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col min-w-[310px] space-y-3.5 bg-white">
+              <button
                 onClick={() => handleNewChat()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-blue-50 border border-blue-200 text-blue-600 rounded-xl font-bold text-sm transition-all hover:bg-blue-100/60 shrink-0 cursor-pointer"
+                className="w-full flex items-center gap-3 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm transition-all hover:bg-blue-100 shadow-sm shrink-0 cursor-pointer active:scale-[0.98]"
               >
-                <span className="text-base font-extrabold">＋</span> チャットの新規作成
+                <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
+                </div>
+                新規チャット
               </button>
               
               <div className="relative shrink-0">
@@ -231,15 +253,35 @@ export default function Page() {
                 />
               </div>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 text-gray-400 rounded-xl font-bold text-sm cursor-not-allowed opacity-70 text-left shadow-xs">
-                <span className="text-base">📄</span> 物件資料の作成 <span className="text-xs font-normal text-gray-400/80">(Ver 1.2)</span>
-              </button>
+              <div className="flex flex-col">
+                <div
+                  onClick={() => setIsToolsOpen(!isToolsOpen)}
+                  className="border-b border-gray-100 pb-2 pt-1 flex items-center justify-between text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-600 cursor-pointer px-1 transition-colors group"
+                >
+                  <div className="flex items-center gap-2.5"><span>🛠️</span> ツール <span className="text-[9px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-md ml-1">Recommend</span></div>
+                  <span className={`text-[10px] text-gray-400/70 font-normal transition-transform duration-300 ${isToolsOpen ? "rotate-90" : ""}`}>＞</span>
+                </div>
+                <div className={`transition-all duration-300 overflow-hidden flex flex-col gap-1 ${isToolsOpen ? "max-h-[300px] mt-2 opacity-100" : "max-h-0 opacity-0"}`}>
+                  <div className="group">
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50/50 border border-transparent text-gray-400 rounded-xl font-bold text-xs cursor-not-allowed opacity-60 text-left">
+                      <span className="text-sm">📄</span> 物件資料の作成 <span className="text-[10px] font-normal text-gray-400/60">(Ver 1.2)</span>
+                    </button>
+                    <div className="max-h-0 overflow-hidden group-hover:max-h-10 transition-all duration-200 px-3">
+                      <p className="text-[10px] text-amber-600 font-semibold py-1">Ver 1.2で実装予定です</p>
+                    </div>
+                  </div>
+                  <div className="group">
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50/50 border border-transparent text-gray-400 rounded-xl font-bold text-xs cursor-not-allowed opacity-60 text-left">
+                      <span className="text-sm">📖</span> ライブラリ <span className="text-[10px] font-normal text-gray-400/60">(Ver 1.2)</span>
+                    </button>
+                    <div className="max-h-0 overflow-hidden group-hover:max-h-10 transition-all duration-200 px-3">
+                      <p className="text-[10px] text-amber-600 font-semibold py-1">Ver 1.2で実装予定です</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 text-gray-400 rounded-xl font-bold text-sm hover:bg-gray-50/80 transition-all cursor-pointer text-left shadow-xs">
-                <span className="text-base">📖</span> ライブラリ <span className="text-xs font-normal text-gray-400/80">(Ver 1.2)</span>
-              </button>
-
-              <div className="flex flex-col mt-2">
+              <div className="flex flex-col">
                 <div 
                   onClick={() => setIsQuickCommandOpen(!isQuickCommandOpen)}
                   className="border-b border-gray-100 pb-2 pt-1 flex items-center justify-between text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-600 cursor-pointer px-1 transition-colors group"
@@ -261,15 +303,14 @@ export default function Page() {
 
               <div className="flex flex-col flex-1">
                 <div onClick={() => setIsHistoryOpen(!isHistoryOpen)} className="border-b border-gray-100 pb-2 flex items-center justify-between text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-600 cursor-pointer px-1 mb-2 transition-colors group">
-                  <div className="flex items-center gap-2.5"><span>⏳</span> 過去のチャット履歴</div>
+                  <div className="flex items-center gap-2.5"><span>💬</span> チャット</div>
                   <span className={`text-[10px] text-gray-400/70 font-normal transition-transform duration-300 ${isHistoryOpen ? "rotate-90" : ""}`}>＞</span>
                 </div>
                 <div className={`transition-all duration-300 overflow-hidden flex-1 flex flex-col ${isHistoryOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}>
                   <div className="flex-1 overflow-y-auto space-y-1 max-h-[180px] md:max-h-none pr-1">
                     {filteredSessions.map((session) => (
                       <div key={session.id} onClick={() => { setCurrentSessionId(session.id); if (window.innerWidth < 768) setIsSidebarOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm text-left font-medium transition-all group cursor-pointer ${session.id === currentSessionId ? "bg-gray-50 text-blue-700 font-semibold border border-gray-100" : "text-gray-600 hover:bg-gray-50/60"}`}>
-                        <div className="flex items-center gap-2.5 truncate flex-1 mr-2">
-                          <span className="text-sm shrink-0">💬</span>
+                        <div className="flex items-center truncate flex-1 mr-2">
                           <div className="truncate flex-1 flex flex-col">
                             <span className="truncate">{session.title}</span>
                             {session.tag && <span className="text-[10px] text-blue-600 bg-blue-50 border border-blue-100/50 px-1.5 py-0.2 rounded-md w-max mt-0.5 font-semibold">#{session.tag}</span>}
@@ -333,7 +374,7 @@ export default function Page() {
                 className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
                 title="サイドバーを開く"
               >
-                <img src="/logo.png" alt="Prop-Station" className="w-6 h-6 object-contain" />
+                <img src="/logo-only.webp" alt="Prop-Station" className="w-7 h-7 object-contain" />
               </button>
 
               <div className="w-6 h-[1px] bg-gray-100"></div>
@@ -341,7 +382,7 @@ export default function Page() {
               <button 
                 onClick={() => handleNewChat()}
                 className="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition-all shadow-sm cursor-pointer"
-                title="新しいチャット"
+                title="新規チャット"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"/></svg>
               </button>
@@ -381,126 +422,151 @@ export default function Page() {
       {/* =========================================
           メインチャットエリア
       ========================================= */}
-      <main className="flex-1 flex flex-col h-full relative min-w-0">
-        
-        {/* ヘッダー */}
-        <header className="h-[72px] bg-[#f4f7f9] border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
-          <div className="flex items-center gap-3">
-            {!isSidebarOpen && (
-              <button 
-                className="p-2 -ml-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center cursor-pointer md:hidden" 
-                onClick={() => setIsSidebarOpen(true)}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-              </button>
-            )}
-            
-            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 hidden sm:flex">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0">
-                <img src="/logo.png" alt="Prop-Station" className="w-5 h-5 object-contain" />
-              </div>
-              <div>
-                <h2 className="font-bold text-gray-800 flex items-center gap-2 text-xs sm:text-sm">
-                  Prop-Station <span className="text-xs text-blue-600 bg-blue-50 px-2 rounded-md font-semibold">{currentSession.title}</span>
-                </h2>
-              </div>
-            </div>
-          </div>
-        </header>
+      {(() => {
+        const isNewChat = messages.filter(m => m.role === "user").length === 0 && !isLoading && !currentSession.tag;
+        const greetingText = `こんにちは、${userName}さん`;
+        return (
+          <main className="flex-1 flex flex-col h-full relative min-w-0">
 
-        {/* チャットタイムライン */}
-        <div className="flex-1 overflow-y-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto space-y-6">
-            
-            {messages.map((msg, index) => (
-              <div key={index} className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 overflow-hidden ${msg.role === "user" ? "bg-blue-100 border border-gray-200" : "bg-white border border-gray-200 text-blue-600"}`}>
-                  {msg.role === "user" ? <img src={userImage} className="w-full h-full object-cover" /> : <img src="/logo.png" className="w-4 h-4 object-contain" />}
-                </div>
-                <div className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} max-w-[80%]`}>
-                  <div className={`p-4 md:p-5 rounded-3xl shadow-sm text-sm md:text-base leading-relaxed whitespace-pre-wrap font-['Zen_Maru_Gothic',_sans-serif] ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none border border-blue-700" : "bg-white text-gray-800 rounded-tl-none border border-gray-100"}`}>
-                    {/* AIの回答から不快な記号を自動消去 */}
-                    {msg.role === "ai" 
-                      ? msg.content
-                          .replace(/\*\*/g, "")
-                          .replace(/^\s*[\*\-]\s+/gm, "・ ")
-                          .replace(/#/g, "")
-                      : msg.content
-                    }
-                  </div>
-
-                  {/* ★ 新規追加：AIの返答にシートデータが含まれている場合、閲覧ボタンを出す */}
-                  {msg.role === "ai" && msg.sheetData && (
-                    <button 
-                      onClick={() => {
-                        setActiveSheetData(msg.sheetData);
-                        setIsSheetModalOpen(true);
-                      }}
-                      className="mt-2 flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-100 transition-all cursor-pointer"
-                    >
-                      📋 役所調査シートを見る
+            {/* ヘッダー（新規チャット時は非表示） */}
+            {!isNewChat && (
+              <header className="h-[72px] bg-[#f4f7f9] border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
+                <div className="flex items-center gap-3">
+                  {!isSidebarOpen && (
+                    <button className="p-2 -ml-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center cursor-pointer md:hidden" onClick={() => setIsSidebarOpen(true)}>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                   )}
-
-                  <span className="text-xs text-gray-400 mt-2 mx-1">{msg.time}</span>
+                  <h2 className="font-bold text-gray-800 text-sm sm:text-base truncate">{currentSession.title}</h2>
                 </div>
-              </div>
+              </header>
+            )}
 
-              
-
-
-            ))}
-            
-            {isLoading && (
-              <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 bg-white border border-gray-200">
-                  <img src="/logo.png" className="w-4 h-4 object-contain" />
+            {isNewChat ? (
+              /* ========== 新規チャット: 中央寄せUI ========== */
+              <div className="flex-1 flex flex-col items-center justify-center px-4">
+                <div className="flex flex-col items-center mb-10 space-y-4">
+                  <img src="/logo.webp" alt="Prop-Station" className="w-20 h-20 object-contain" />
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 tracking-tight">
+                    {typedGreeting}<span className={`inline-block w-0.5 h-7 bg-blue-600 ml-1 align-middle ${greetingDone ? "hidden" : "animate-pulse"}`}></span>
+                  </h2>
+                  <p className={`text-sm text-gray-500 font-medium transition-opacity duration-500 ${greetingDone ? "opacity-100" : "opacity-0"}`}>営業に必要な調べ物、お手伝い致します！</p>
                 </div>
-                <div className="flex flex-col items-start max-w-[80%]">
-                  <div className="p-3 md:p-4 rounded-3xl bg-white border border-gray-100 shadow-sm rounded-tl-none flex items-center gap-3">
-                    <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span className="text-sm font-bold text-gray-500 animate-pulse font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]">AI思考中...</span>
+
+                <div className="w-full max-w-2xl space-y-6">
+                  <div className="relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-lg p-2 transition-all focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      placeholder="お手伝いできることはありますか？（Enterキーで送信）"
+                      className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
+                    />
+                    <button
+                      onClick={handleSend}
+                      disabled={!input.trim()}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all mr-1 shadow-sm ${!input.trim() ? "bg-[#1e3a8a] opacity-50 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"}`}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                    </button>
+                  </div>
+                  <div className="w-full flex gap-6">
+                    <div className="w-1/2">
+                      <p className="text-[11px] text-gray-400 font-semibold mb-2">⚡ クイックコマンド</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleNewChat("役所調査", "役所調査のサポートモードを起動しました。調査したい市区町村や、確認したい項目を教えてください。🏢", "役所調査")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">🏢 役所調査サポート</button>
+                        <button onClick={() => handleNewChat("地価検索", "地価検索モードを起動しました。調べたい土地の住所を入力してください。💴", "地価検索")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">💴 周辺地価検索</button>
+                      </div>
+                    </div>
+                    <div className="w-1/2">
+                      <p className="text-[11px] text-gray-400 font-semibold mb-2">🛠️ ツール</p>
+                      <div className="flex gap-2">
+                        <span className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-400 text-xs font-semibold rounded-full cursor-not-allowed opacity-60">📄 物件資料の作成 <span className="text-[10px] text-gray-400/60">(Ver 1.2)</span></span>
+                        <span className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-400 text-xs font-semibold rounded-full cursor-not-allowed opacity-60">📖 ライブラリ <span className="text-[10px] text-gray-400/60">(Ver 1.2)</span></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            ) : (
+              /* ========== 継続チャット: 従来UI ========== */
+              <>
+                <div className="flex-1 overflow-y-auto px-4 py-8">
+                  <div className="max-w-4xl mx-auto space-y-6">
+                    {messages.map((msg, index) => (
+                      <div key={index} className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 overflow-hidden ${msg.role === "user" ? "bg-blue-100 border border-gray-200" : "bg-white border border-gray-200 text-blue-600"}`}>
+                          {msg.role === "user" ? <img src={userImage} className="w-full h-full object-cover" /> : <img src="/logo.webp" className="w-5 h-5 object-contain" />}
+                        </div>
+                        <div className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} max-w-[80%]`}>
+                          <div className={`p-4 md:p-5 rounded-3xl shadow-sm text-sm md:text-base leading-relaxed whitespace-pre-wrap font-['Zen_Maru_Gothic',_sans-serif] ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none border border-blue-700" : "bg-white text-gray-800 rounded-tl-none border border-gray-100"}`}>
+                            {msg.role === "ai"
+                              ? msg.content.replace(/\*\*/g, "").replace(/^\s*[\*\-]\s+/gm, "・ ").replace(/#/g, "")
+                              : msg.content}
+                          </div>
+                          {msg.role === "ai" && msg.sheetData && (
+                            <button onClick={() => { setActiveSheetData(msg.sheetData); setIsSheetModalOpen(true); }} className="mt-2 flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-100 transition-all cursor-pointer">
+                              📋 役所調査シートを見る
+                            </button>
+                          )}
+                          <span className="text-xs text-gray-400 mt-2 mx-1">{msg.time}</span>
+                        </div>
+                      </div>
+                    ))}
 
-        {/* 入力エリア */}
-        <div className="p-4 md:p-6 w-full">
-          <div className="max-w-4xl mx-auto">
-            <div className={`relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-sm p-2 transition-all ${isLoading ? "opacity-50" : "focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100"}`}>
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.nativeEvent.isComposing) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder={isLoading ? "AIが考え中..." : "質問を入力してください（Enterキーで送信）"}
-                disabled={isLoading}
-                className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base disabled:bg-transparent font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
-              />
-              <button 
-                onClick={handleSend}
-                disabled={isLoading || !input.trim()}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all mr-1 shadow-sm ${
-                  !input.trim() || isLoading ? "bg-[#1e3a8a] opacity-50 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
+                    {isLoading && (
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 bg-white border border-gray-200">
+                          <img src="/logo.webp" className="w-5 h-5 object-contain" />
+                        </div>
+                        <div className="flex flex-col items-start max-w-[80%]">
+                          <div className="p-3 md:p-4 rounded-3xl bg-white border border-gray-100 shadow-sm rounded-tl-none flex items-center gap-3">
+                            <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span className="text-sm font-bold text-gray-500 animate-pulse font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]">AI思考中...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4 md:p-6 w-full">
+                  <div className="max-w-4xl mx-auto">
+                    <div className={`relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-sm p-2 transition-all ${isLoading ? "opacity-50" : "focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100"}`}>
+                      <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        placeholder={isLoading ? "AIが考え中..." : "お手伝いできることはありますか？（Enterキーで送信）"}
+                        disabled={isLoading}
+                        className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base disabled:bg-transparent font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
+                      />
+                      <button onClick={handleSend} disabled={isLoading || !input.trim()} className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all mr-1 shadow-sm ${!input.trim() || isLoading ? "bg-[#1e3a8a] opacity-50 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"}`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </main>
+        );
+      })()}
 
       {/* =========================================
           プロフィール編集ポップアップ（Googleアカウント風：バグ修正済）

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "openapi:prop-lib": "npx @scalar/cli document serve docs/reinfolib-openapi.yaml --port 4001"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
