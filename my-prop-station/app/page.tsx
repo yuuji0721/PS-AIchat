@@ -395,16 +395,7 @@ export default function Page() {
               </button>
             )}
             
-            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 hidden sm:flex">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0">
-                <img src="/logo.png" alt="Prop-Station" className="w-5 h-5 object-contain" />
-              </div>
-              <div>
-                <h2 className="font-bold text-gray-800 flex items-center gap-2 text-xs sm:text-sm">
-                  Prop-Station <span className="text-xs text-blue-600 bg-blue-50 px-2 rounded-md font-semibold">{currentSession.title}</span>
-                </h2>
-              </div>
-            </div>
+            <h2 className="font-bold text-gray-800 text-sm sm:text-base truncate">{currentSession.title}</h2>
           </div>
         </header>
 
