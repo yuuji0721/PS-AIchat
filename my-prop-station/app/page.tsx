@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 // メッセージ1件ずつの型
 interface Message {
@@ -64,6 +64,24 @@ export default function Page() {
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
   const messages = currentSession.messages;
+
+  const [typedGreeting, setTypedGreeting] = useState("");
+  const [greetingDone, setGreetingDone] = useState(false);
+  const isNewChatState = messages.filter(m => m.role === "user").length === 0 && !isLoading;
+  const fullGreeting = `こんにちは、${userName}さん`;
+
+  useEffect(() => {
+    if (!isNewChatState) { setTypedGreeting(""); setGreetingDone(false); return; }
+    setTypedGreeting("");
+    setGreetingDone(false);
+    let i = 0;
+    const timer = setInterval(() => {
+      i++;
+      setTypedGreeting(fullGreeting.slice(0, i));
+      if (i >= fullGreeting.length) { clearInterval(timer); setGreetingDone(true); }
+    }, 80);
+    return () => clearInterval(timer);
+  }, [isNewChatState, fullGreeting]);
 
   const handleNewChat = (
     customTitle = "新規チャット", 
@@ -240,7 +258,7 @@ export default function Page() {
                   onClick={() => setIsToolsOpen(!isToolsOpen)}
                   className="border-b border-gray-100 pb-2 pt-1 flex items-center justify-between text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-600 cursor-pointer px-1 transition-colors group"
                 >
-                  <div className="flex items-center gap-2.5"><span>🛠️</span> ツール</div>
+                  <div className="flex items-center gap-2.5"><span>🛠️</span> ツール <span className="text-[9px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-md ml-1">Recommend</span></div>
                   <span className={`text-[10px] text-gray-400/70 font-normal transition-transform duration-300 ${isToolsOpen ? "rotate-90" : ""}`}>＞</span>
                 </div>
                 <div className={`transition-all duration-300 overflow-hidden flex flex-col gap-1 ${isToolsOpen ? "max-h-[300px] mt-2 opacity-100" : "max-h-0 opacity-0"}`}>
@@ -406,6 +424,7 @@ export default function Page() {
       ========================================= */}
       {(() => {
         const isNewChat = messages.filter(m => m.role === "user").length === 0 && !isLoading;
+        const greetingText = `こんにちは、${userName}さん`;
         return (
           <main className="flex-1 flex flex-col h-full relative min-w-0">
 
@@ -429,10 +448,10 @@ export default function Page() {
                 <div className="flex flex-col items-center mb-10 space-y-4">
                   <img src="/logo.webp" alt="Prop-Station" className="w-20 h-20 object-contain" />
                   <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 tracking-tight">
-                    こんにちは、{userName}さん
+                    {typedGreeting}<span className={`inline-block w-0.5 h-7 bg-blue-600 ml-1 align-middle ${greetingDone ? "hidden" : "animate-pulse"}`}></span>
                   </h2>
-                  <p className="text-sm text-gray-500 font-medium mb-3">営業に必要な調べ物をお手伝いします</p>
-                  <div className="flex flex-wrap justify-center gap-2">
+                  <p className={`text-sm text-gray-500 font-medium transition-opacity duration-500 ${greetingDone ? "opacity-100" : "opacity-0"}`}>営業に必要な調べ物、お手伝い致します！</p>
+                  <div className={`flex flex-wrap justify-center gap-2 transition-opacity duration-500 delay-200 ${greetingDone ? "opacity-100" : "opacity-0"}`}>
                     <span className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full border border-blue-100">🏠 物件検索</span>
                     <span className="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-full border border-emerald-100">📋 重要事項説明</span>
                     <span className="px-3 py-1.5 bg-amber-50 text-amber-600 text-xs font-semibold rounded-full border border-amber-100">💴 地価照会</span>
@@ -440,8 +459,8 @@ export default function Page() {
                   </div>
                 </div>
 
-                <div className="w-full max-w-2xl">
-                  <div className={`relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-lg p-2 transition-all focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100`}>
+                <div className={`w-full max-w-2xl space-y-3 transition-opacity duration-500 delay-300 ${greetingDone ? "opacity-100" : "opacity-0"}`}>
+                  <div className="relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-lg p-2 transition-all focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
                     <input
                       type="text"
                       value={input}
@@ -462,6 +481,10 @@ export default function Page() {
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
                     </button>
+                  </div>
+                  <div className="flex justify-center gap-2">
+                    <button onClick={() => handleNewChat("役所調査", "役所調査のサポートモードを起動しました。調査したい市区町村や、確認したい項目を教えてください。🏢", "役所調査")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">🏢 役所調査サポート</button>
+                    <button onClick={() => handleNewChat("地価検索", "地価検索モードを起動しました。調べたい土地の住所を入力してください。💴", "地価検索")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">💴 周辺地価検索</button>
                   </div>
                 </div>
               </div>
