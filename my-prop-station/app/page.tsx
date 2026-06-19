@@ -190,7 +190,7 @@ export default function Page() {
           
           {/* 左側のかたまり：ロゴとテキスト */}
           <div className="flex items-center gap-2">
-            <img src="/logo.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
+            <img src="/logo-only.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
             <div className="flex flex-col">
               <h1 className="font-bold text-[21px] tracking-tight leading-none">
                 <span className="text-blue-600">Prop</span><span className="text-[#1a365d]">-Station</span>
@@ -353,7 +353,7 @@ export default function Page() {
                 className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
                 title="サイドバーを開く"
               >
-                <img src="/logo.webp" alt="Prop-Station" className="w-7 h-7 object-contain" />
+                <img src="/logo-only.webp" alt="Prop-Station" className="w-7 h-7 object-contain" />
               </button>
 
               <div className="w-6 h-[1px] bg-gray-100"></div>
