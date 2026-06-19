@@ -67,7 +67,7 @@ export default function Page() {
 
   const [typedGreeting, setTypedGreeting] = useState("");
   const [greetingDone, setGreetingDone] = useState(false);
-  const isNewChatState = messages.filter(m => m.role === "user").length === 0 && !isLoading;
+  const isNewChatState = messages.filter(m => m.role === "user").length === 0 && !isLoading && !currentSession.tag;
   const fullGreeting = `こんにちは、${userName}さん`;
 
   useEffect(() => {
@@ -423,7 +423,7 @@ export default function Page() {
           メインチャットエリア
       ========================================= */}
       {(() => {
-        const isNewChat = messages.filter(m => m.role === "user").length === 0 && !isLoading;
+        const isNewChat = messages.filter(m => m.role === "user").length === 0 && !isLoading && !currentSession.tag;
         const greetingText = `こんにちは、${userName}さん`;
         return (
           <main className="flex-1 flex flex-col h-full relative min-w-0">
