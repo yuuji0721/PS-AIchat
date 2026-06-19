@@ -476,18 +476,20 @@ export default function Page() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
                     </button>
                   </div>
-                  <div className="w-full">
-                    <p className="text-[11px] text-gray-400 font-semibold mb-2">⚡ クイックコマンド</p>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleNewChat("役所調査", "役所調査のサポートモードを起動しました。調査したい市区町村や、確認したい項目を教えてください。🏢", "役所調査")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">🏢 役所調査サポート</button>
-                      <button onClick={() => handleNewChat("地価検索", "地価検索モードを起動しました。調べたい土地の住所を入力してください。💴", "地価検索")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">💴 周辺地価検索</button>
+                  <div className="w-full flex gap-6">
+                    <div>
+                      <p className="text-[11px] text-gray-400 font-semibold mb-2">⚡ クイックコマンド</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleNewChat("役所調査", "役所調査のサポートモードを起動しました。調査したい市区町村や、確認したい項目を教えてください。🏢", "役所調査")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">🏢 役所調査サポート</button>
+                        <button onClick={() => handleNewChat("地価検索", "地価検索モードを起動しました。調べたい土地の住所を入力してください。💴", "地価検索")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">💴 周辺地価検索</button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="w-full">
-                    <p className="text-[11px] text-gray-400 font-semibold mb-2">🛠️ ツール</p>
-                    <div className="flex gap-2">
-                      <span className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-400 text-xs font-semibold rounded-full cursor-not-allowed opacity-60">📄 物件資料の作成 <span className="text-[10px] text-gray-400/60">(Ver 1.2)</span></span>
-                      <span className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-400 text-xs font-semibold rounded-full cursor-not-allowed opacity-60">📖 ライブラリ <span className="text-[10px] text-gray-400/60">(Ver 1.2)</span></span>
+                    <div>
+                      <p className="text-[11px] text-gray-400 font-semibold mb-2">🛠️ ツール</p>
+                      <div className="flex gap-2">
+                        <span className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-400 text-xs font-semibold rounded-full cursor-not-allowed opacity-60">📄 物件資料の作成 <span className="text-[10px] text-gray-400/60">(Ver 1.2)</span></span>
+                        <span className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-400 text-xs font-semibold rounded-full cursor-not-allowed opacity-60">📖 ライブラリ <span className="text-[10px] text-gray-400/60">(Ver 1.2)</span></span>
+                      </div>
                     </div>
                   </div>
                 </div>
