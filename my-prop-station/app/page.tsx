@@ -240,18 +240,22 @@ export default function Page() {
                   <div className="flex items-center gap-2.5"><span>🛠️</span> ツール</div>
                   <span className={`text-[10px] text-gray-400/70 font-normal transition-transform duration-300 ${isToolsOpen ? "rotate-90" : ""}`}>＞</span>
                 </div>
-                <div className={`transition-all duration-300 overflow-hidden flex flex-col gap-1 ${isToolsOpen ? "max-h-[200px] mt-2 opacity-100" : "max-h-0 opacity-0"}`}>
-                  <div className="relative group">
+                <div className={`transition-all duration-300 overflow-hidden flex flex-col gap-1 ${isToolsOpen ? "max-h-[300px] mt-2 opacity-100" : "max-h-0 opacity-0"}`}>
+                  <div className="group">
                     <button className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50/50 border border-transparent text-gray-400 rounded-xl font-bold text-xs cursor-not-allowed opacity-60 text-left">
                       <span className="text-sm">📄</span> 物件資料の作成 <span className="text-[10px] font-normal text-gray-400/60">(Ver 1.2)</span>
                     </button>
-                    <div className="absolute left-1/2 -translate-x-1/2 -top-9 bg-gray-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">Ver 1.2で実装予定です</div>
+                    <div className="max-h-0 overflow-hidden group-hover:max-h-10 transition-all duration-200 px-3">
+                      <p className="text-[10px] text-amber-600 font-semibold py-1">Ver 1.2で実装予定です</p>
+                    </div>
                   </div>
-                  <div className="relative group">
+                  <div className="group">
                     <button className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50/50 border border-transparent text-gray-400 rounded-xl font-bold text-xs cursor-not-allowed opacity-60 text-left">
                       <span className="text-sm">📖</span> ライブラリ <span className="text-[10px] font-normal text-gray-400/60">(Ver 1.2)</span>
                     </button>
-                    <div className="absolute left-1/2 -translate-x-1/2 -top-9 bg-gray-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">Ver 1.2で実装予定です</div>
+                    <div className="max-h-0 overflow-hidden group-hover:max-h-10 transition-all duration-200 px-3">
+                      <p className="text-[10px] text-amber-600 font-semibold py-1">Ver 1.2で実装予定です</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -278,7 +282,7 @@ export default function Page() {
 
               <div className="flex flex-col flex-1">
                 <div onClick={() => setIsHistoryOpen(!isHistoryOpen)} className="border-b border-gray-100 pb-2 flex items-center justify-between text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-600 cursor-pointer px-1 mb-2 transition-colors group">
-                  <div className="flex items-center gap-2.5"><span>⏳</span> 過去のチャット履歴</div>
+                  <div className="flex items-center gap-2.5"><span>⏳</span> チャット</div>
                   <span className={`text-[10px] text-gray-400/70 font-normal transition-transform duration-300 ${isHistoryOpen ? "rotate-90" : ""}`}>＞</span>
                 </div>
                 <div className={`transition-all duration-300 overflow-hidden flex-1 flex flex-col ${isHistoryOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}>
