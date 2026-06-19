@@ -207,7 +207,7 @@ export default function Page() {
             onClick={() => setIsSidebarOpen(false)}
             title="サイドバーを閉じる"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6"/><line x1="4" y1="4" x2="4" y2="20" strokeLinecap="round"/></svg>
           </button>
           
         </div>
