@@ -216,10 +216,10 @@ export default function Page() {
             <div className="flex-1 overflow-y-auto p-4 flex flex-col min-w-[310px] space-y-3.5 bg-white">
               <button
                 onClick={() => handleNewChat()}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-2xl font-bold text-sm transition-all hover:from-blue-700 hover:to-blue-600 shadow-md shadow-blue-200/50 hover:shadow-lg hover:shadow-blue-300/50 shrink-0 cursor-pointer active:scale-[0.98]"
+                className="w-full flex items-center gap-3 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm transition-all hover:bg-blue-100 shadow-sm shrink-0 cursor-pointer active:scale-[0.98]"
               >
-                <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
+                <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
                 </div>
                 新しいチャット
               </button>
