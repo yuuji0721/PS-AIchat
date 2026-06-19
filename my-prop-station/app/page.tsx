@@ -23,6 +23,7 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [isToolsOpen, setIsToolsOpen] = useState(true);
   const [isQuickCommandOpen, setIsQuickCommandOpen] = useState(true);
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
 
@@ -231,15 +232,31 @@ export default function Page() {
                 />
               </div>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 text-gray-400 rounded-xl font-bold text-sm cursor-not-allowed opacity-70 text-left shadow-xs">
-                <span className="text-base">📄</span> 物件資料の作成 <span className="text-xs font-normal text-gray-400/80">(Ver 1.2)</span>
-              </button>
+              <div className="flex flex-col">
+                <div
+                  onClick={() => setIsToolsOpen(!isToolsOpen)}
+                  className="border-b border-gray-100 pb-2 pt-1 flex items-center justify-between text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-600 cursor-pointer px-1 transition-colors group"
+                >
+                  <div className="flex items-center gap-2.5"><span>🛠️</span> ツール</div>
+                  <span className={`text-[10px] text-gray-400/70 font-normal transition-transform duration-300 ${isToolsOpen ? "rotate-90" : ""}`}>＞</span>
+                </div>
+                <div className={`transition-all duration-300 overflow-hidden flex flex-col gap-1 ${isToolsOpen ? "max-h-[200px] mt-2 opacity-100" : "max-h-0 opacity-0"}`}>
+                  <div className="relative group">
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50/50 border border-transparent text-gray-400 rounded-xl font-bold text-xs cursor-not-allowed opacity-60 text-left">
+                      <span className="text-sm">📄</span> 物件資料の作成 <span className="text-[10px] font-normal text-gray-400/60">(Ver 1.2)</span>
+                    </button>
+                    <div className="absolute left-1/2 -translate-x-1/2 -top-9 bg-gray-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">Ver 1.2で実装予定です</div>
+                  </div>
+                  <div className="relative group">
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50/50 border border-transparent text-gray-400 rounded-xl font-bold text-xs cursor-not-allowed opacity-60 text-left">
+                      <span className="text-sm">📖</span> ライブラリ <span className="text-[10px] font-normal text-gray-400/60">(Ver 1.2)</span>
+                    </button>
+                    <div className="absolute left-1/2 -translate-x-1/2 -top-9 bg-gray-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">Ver 1.2で実装予定です</div>
+                  </div>
+                </div>
+              </div>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 text-gray-400 rounded-xl font-bold text-sm hover:bg-gray-50/80 transition-all cursor-pointer text-left shadow-xs">
-                <span className="text-base">📖</span> ライブラリ <span className="text-xs font-normal text-gray-400/80">(Ver 1.2)</span>
-              </button>
-
-              <div className="flex flex-col mt-2">
+              <div className="flex flex-col">
                 <div 
                   onClick={() => setIsQuickCommandOpen(!isQuickCommandOpen)}
                   className="border-b border-gray-100 pb-2 pt-1 flex items-center justify-between text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-600 cursor-pointer px-1 transition-colors group"
