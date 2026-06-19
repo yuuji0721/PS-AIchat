@@ -189,7 +189,7 @@ export default function Page() {
         <div className="h-[76px] pl-6 pr-3 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
           
           {/* 左側のかたまり：ロゴとテキスト */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3.5">
             <img src="/logo-only.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
             <div className="flex flex-col">
               <h1 className="font-bold text-[21px] tracking-tight leading-none">
