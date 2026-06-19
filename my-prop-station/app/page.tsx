@@ -190,7 +190,7 @@ export default function Page() {
           
           {/* 左側のかたまり：ロゴとテキスト */}
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Prop-Station" className="w-6 h-6 object-contain" />
+            <img src="/logo.webp" alt="Prop-Station" className="w-6 h-6 object-contain" />
             <div className="flex flex-col">
               <h1 className="font-bold text-[#1a365d] text-[21px] tracking-tight leading-none">
                 Prop-Station
@@ -282,7 +282,7 @@ export default function Page() {
 
               <div className="flex flex-col flex-1">
                 <div onClick={() => setIsHistoryOpen(!isHistoryOpen)} className="border-b border-gray-100 pb-2 flex items-center justify-between text-xs sm:text-sm font-bold text-gray-400 hover:text-gray-600 cursor-pointer px-1 mb-2 transition-colors group">
-                  <div className="flex items-center gap-2.5"><span>⏳</span> チャット</div>
+                  <div className="flex items-center gap-2.5"><span>💬</span> チャット</div>
                   <span className={`text-[10px] text-gray-400/70 font-normal transition-transform duration-300 ${isHistoryOpen ? "rotate-90" : ""}`}>＞</span>
                 </div>
                 <div className={`transition-all duration-300 overflow-hidden flex-1 flex flex-col ${isHistoryOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}>
@@ -354,7 +354,7 @@ export default function Page() {
                 className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
                 title="サイドバーを開く"
               >
-                <img src="/logo.png" alt="Prop-Station" className="w-6 h-6 object-contain" />
+                <img src="/logo.webp" alt="Prop-Station" className="w-6 h-6 object-contain" />
               </button>
 
               <div className="w-6 h-[1px] bg-gray-100"></div>
@@ -425,7 +425,7 @@ export default function Page() {
               /* ========== 新規チャット: 中央寄せUI ========== */
               <div className="flex-1 flex flex-col items-center justify-center px-4">
                 <div className="flex flex-col items-center mb-10 space-y-4">
-                  <img src="/logo.png" alt="Prop-Station" className="w-20 h-20 object-contain" />
+                  <img src="/logo.webp" alt="Prop-Station" className="w-20 h-20 object-contain" />
                   <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 tracking-tight">
                     こんにちは、{userName}さん
                   </h2>
@@ -465,7 +465,7 @@ export default function Page() {
                     {messages.map((msg, index) => (
                       <div key={index} className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 overflow-hidden ${msg.role === "user" ? "bg-blue-100 border border-gray-200" : "bg-white border border-gray-200 text-blue-600"}`}>
-                          {msg.role === "user" ? <img src={userImage} className="w-full h-full object-cover" /> : <img src="/logo.png" className="w-4 h-4 object-contain" />}
+                          {msg.role === "user" ? <img src={userImage} className="w-full h-full object-cover" /> : <img src="/logo.webp" className="w-4 h-4 object-contain" />}
                         </div>
                         <div className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} max-w-[80%]`}>
                           <div className={`p-4 md:p-5 rounded-3xl shadow-sm text-sm md:text-base leading-relaxed whitespace-pre-wrap font-['Zen_Maru_Gothic',_sans-serif] ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none border border-blue-700" : "bg-white text-gray-800 rounded-tl-none border border-gray-100"}`}>
@@ -486,7 +486,7 @@ export default function Page() {
                     {isLoading && (
                       <div className="flex gap-4">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 bg-white border border-gray-200">
-                          <img src="/logo.png" className="w-4 h-4 object-contain" />
+                          <img src="/logo.webp" className="w-4 h-4 object-contain" />
                         </div>
                         <div className="flex flex-col items-start max-w-[80%]">
                           <div className="p-3 md:p-4 rounded-3xl bg-white border border-gray-100 shadow-sm rounded-tl-none flex items-center gap-3">
