@@ -381,117 +381,134 @@ export default function Page() {
       {/* =========================================
           メインチャットエリア
       ========================================= */}
-      <main className="flex-1 flex flex-col h-full relative min-w-0">
-        
-        {/* ヘッダー */}
-        <header className="h-[72px] bg-[#f4f7f9] border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
-          <div className="flex items-center gap-3">
-            {!isSidebarOpen && (
-              <button 
-                className="p-2 -ml-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center cursor-pointer md:hidden" 
-                onClick={() => setIsSidebarOpen(true)}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-              </button>
-            )}
-            
-            <h2 className="font-bold text-gray-800 text-sm sm:text-base truncate">{currentSession.title}</h2>
-          </div>
-        </header>
+      {(() => {
+        const isNewChat = messages.filter(m => m.role === "user").length === 0 && !isLoading;
+        return (
+          <main className="flex-1 flex flex-col h-full relative min-w-0">
 
-        {/* チャットタイムライン */}
-        <div className="flex-1 overflow-y-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto space-y-6">
-            
-            {messages.map((msg, index) => (
-              <div key={index} className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 overflow-hidden ${msg.role === "user" ? "bg-blue-100 border border-gray-200" : "bg-white border border-gray-200 text-blue-600"}`}>
-                  {msg.role === "user" ? <img src={userImage} className="w-full h-full object-cover" /> : <img src="/logo.png" className="w-4 h-4 object-contain" />}
-                </div>
-                <div className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} max-w-[80%]`}>
-                  <div className={`p-4 md:p-5 rounded-3xl shadow-sm text-sm md:text-base leading-relaxed whitespace-pre-wrap font-['Zen_Maru_Gothic',_sans-serif] ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none border border-blue-700" : "bg-white text-gray-800 rounded-tl-none border border-gray-100"}`}>
-                    {/* AIの回答から不快な記号を自動消去 */}
-                    {msg.role === "ai" 
-                      ? msg.content
-                          .replace(/\*\*/g, "")
-                          .replace(/^\s*[\*\-]\s+/gm, "・ ")
-                          .replace(/#/g, "")
-                      : msg.content
-                    }
-                  </div>
-
-                  {/* ★ 新規追加：AIの返答にシートデータが含まれている場合、閲覧ボタンを出す */}
-                  {msg.role === "ai" && msg.sheetData && (
-                    <button 
-                      onClick={() => {
-                        setActiveSheetData(msg.sheetData);
-                        setIsSheetModalOpen(true);
-                      }}
-                      className="mt-2 flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-100 transition-all cursor-pointer"
-                    >
-                      📋 役所調査シートを見る
+            {/* ヘッダー（新規チャット時は非表示） */}
+            {!isNewChat && (
+              <header className="h-[72px] bg-[#f4f7f9] border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
+                <div className="flex items-center gap-3">
+                  {!isSidebarOpen && (
+                    <button className="p-2 -ml-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors flex items-center justify-center cursor-pointer md:hidden" onClick={() => setIsSidebarOpen(true)}>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                   )}
-
-                  <span className="text-xs text-gray-400 mt-2 mx-1">{msg.time}</span>
+                  <h2 className="font-bold text-gray-800 text-sm sm:text-base truncate">{currentSession.title}</h2>
                 </div>
-              </div>
+              </header>
+            )}
 
-              
-
-
-            ))}
-            
-            {isLoading && (
-              <div className="flex gap-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 bg-white border border-gray-200">
-                  <img src="/logo.png" className="w-4 h-4 object-contain" />
+            {isNewChat ? (
+              /* ========== 新規チャット: 中央寄せUI ========== */
+              <div className="flex-1 flex flex-col items-center justify-center px-4">
+                <div className="flex flex-col items-center mb-10 space-y-4">
+                  <img src="/logo.png" alt="Prop-Station" className="w-20 h-20 object-contain" />
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 tracking-tight">
+                    こんにちは、{userName}さん
+                  </h2>
+                  <p className="text-sm text-gray-500 font-medium">本日はどのようなお手伝いをしましょうか？</p>
                 </div>
-                <div className="flex flex-col items-start max-w-[80%]">
-                  <div className="p-3 md:p-4 rounded-3xl bg-white border border-gray-100 shadow-sm rounded-tl-none flex items-center gap-3">
-                    <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span className="text-sm font-bold text-gray-500 animate-pulse font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]">AI思考中...</span>
+
+                <div className="w-full max-w-2xl">
+                  <div className={`relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-lg p-2 transition-all focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100`}>
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      placeholder="質問を入力してください（Enterキーで送信）"
+                      className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
+                    />
+                    <button
+                      onClick={handleSend}
+                      disabled={!input.trim()}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all mr-1 shadow-sm ${!input.trim() ? "bg-[#1e3a8a] opacity-50 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"}`}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                    </button>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            ) : (
+              /* ========== 継続チャット: 従来UI ========== */
+              <>
+                <div className="flex-1 overflow-y-auto px-4 py-8">
+                  <div className="max-w-4xl mx-auto space-y-6">
+                    {messages.map((msg, index) => (
+                      <div key={index} className={`flex gap-4 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 overflow-hidden ${msg.role === "user" ? "bg-blue-100 border border-gray-200" : "bg-white border border-gray-200 text-blue-600"}`}>
+                          {msg.role === "user" ? <img src={userImage} className="w-full h-full object-cover" /> : <img src="/logo.png" className="w-4 h-4 object-contain" />}
+                        </div>
+                        <div className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} max-w-[80%]`}>
+                          <div className={`p-4 md:p-5 rounded-3xl shadow-sm text-sm md:text-base leading-relaxed whitespace-pre-wrap font-['Zen_Maru_Gothic',_sans-serif] ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none border border-blue-700" : "bg-white text-gray-800 rounded-tl-none border border-gray-100"}`}>
+                            {msg.role === "ai"
+                              ? msg.content.replace(/\*\*/g, "").replace(/^\s*[\*\-]\s+/gm, "・ ").replace(/#/g, "")
+                              : msg.content}
+                          </div>
+                          {msg.role === "ai" && msg.sheetData && (
+                            <button onClick={() => { setActiveSheetData(msg.sheetData); setIsSheetModalOpen(true); }} className="mt-2 flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-100 transition-all cursor-pointer">
+                              📋 役所調査シートを見る
+                            </button>
+                          )}
+                          <span className="text-xs text-gray-400 mt-2 mx-1">{msg.time}</span>
+                        </div>
+                      </div>
+                    ))}
 
-        {/* 入力エリア */}
-        <div className="p-4 md:p-6 w-full">
-          <div className="max-w-4xl mx-auto">
-            <div className={`relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-sm p-2 transition-all ${isLoading ? "opacity-50" : "focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100"}`}>
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.nativeEvent.isComposing) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder={isLoading ? "AIが考え中..." : "質問を入力してください（Enterキーで送信）"}
-                disabled={isLoading}
-                className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base disabled:bg-transparent font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
-              />
-              <button 
-                onClick={handleSend}
-                disabled={isLoading || !input.trim()}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all mr-1 shadow-sm ${
-                  !input.trim() || isLoading ? "bg-[#1e3a8a] opacity-50 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
+                    {isLoading && (
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-1 bg-white border border-gray-200">
+                          <img src="/logo.png" className="w-4 h-4 object-contain" />
+                        </div>
+                        <div className="flex flex-col items-start max-w-[80%]">
+                          <div className="p-3 md:p-4 rounded-3xl bg-white border border-gray-100 shadow-sm rounded-tl-none flex items-center gap-3">
+                            <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span className="text-sm font-bold text-gray-500 animate-pulse font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]">AI思考中...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4 md:p-6 w-full">
+                  <div className="max-w-4xl mx-auto">
+                    <div className={`relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-sm p-2 transition-all ${isLoading ? "opacity-50" : "focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100"}`}>
+                      <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        placeholder={isLoading ? "AIが考え中..." : "質問を入力してください（Enterキーで送信）"}
+                        disabled={isLoading}
+                        className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base disabled:bg-transparent font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
+                      />
+                      <button onClick={handleSend} disabled={isLoading || !input.trim()} className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all mr-1 shadow-sm ${!input.trim() || isLoading ? "bg-[#1e3a8a] opacity-50 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"}`}>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </main>
+        );
+      })()}
 
       {/* =========================================
           プロフィール編集ポップアップ（Googleアカウント風：バグ修正済）
