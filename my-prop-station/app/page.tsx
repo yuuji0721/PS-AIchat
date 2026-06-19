@@ -408,7 +408,7 @@ export default function Page() {
                   <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 tracking-tight">
                     こんにちは、{userName}さん
                   </h2>
-                  <p className="text-sm text-gray-500 font-medium text-center max-w-lg">新規チャットセッションを開始しました。営業用の調べ物（物件検索、重要事項説明の法令確認、地価・都市計画照会など）を入力してください。</p>
+                  <p className="text-sm text-gray-500 font-medium text-center max-w-lg">営業用の調べ物（物件検索、重要事項説明の法令確認、地価・都市計画照会など）を入力してください。</p>
                 </div>
 
                 <div className="w-full max-w-2xl">
