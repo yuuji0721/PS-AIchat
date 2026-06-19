@@ -483,6 +483,13 @@ export default function Page() {
                       <button onClick={() => handleNewChat("地価検索", "地価検索モードを起動しました。調べたい土地の住所を入力してください。💴", "地価検索")} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">💴 周辺地価検索</button>
                     </div>
                   </div>
+                  <div className="w-full">
+                    <p className="text-[11px] text-gray-400 font-semibold mb-2">🛠️ ツール</p>
+                    <div className="flex gap-2">
+                      <span className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-400 text-xs font-semibold rounded-full cursor-not-allowed opacity-60">📄 物件資料の作成 <span className="text-[10px] text-gray-400/60">(Ver 1.2)</span></span>
+                      <span className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-400 text-xs font-semibold rounded-full cursor-not-allowed opacity-60">📖 ライブラリ <span className="text-[10px] text-gray-400/60">(Ver 1.2)</span></span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
