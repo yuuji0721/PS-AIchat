@@ -453,7 +453,7 @@ export default function Page() {
                   <p className={`text-sm text-gray-500 font-medium transition-opacity duration-500 ${greetingDone ? "opacity-100" : "opacity-0"}`}>営業に必要な調べ物、お手伝い致します！</p>
                 </div>
 
-                <div className="w-full max-w-2xl space-y-3">
+                <div className="w-full max-w-2xl space-y-6">
                   <div className="relative flex items-center bg-white rounded-2xl border border-gray-200 shadow-lg p-2 transition-all focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
                     <input
                       type="text"
