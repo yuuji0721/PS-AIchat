@@ -33,6 +33,7 @@ export default function Page() {
   const [modalTag, setModalTag] = useState("");
   const [isSheetModalOpen, setIsSheetModalOpen] = useState(false);
   const [activeSheetData, setActiveSheetData] = useState<any>(null);
+  const [authState, setAuthState] = useState<"login" | "register" | "authenticated">("login");
 
 
   // =========================================
@@ -180,6 +181,47 @@ export default function Page() {
     }
   };
  
+  {/* ★ 新規追加：サジェスト質問ボタンを押した時にワンタップで自動送信する関数 */}
+  const handleSuggestionClick = async (suggestionText: string) => {
+    if (isLoading) return;
+    setIsLoading(true);
+
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const updatedMessages: Message[] = [...messages, { role: "user", content: suggestionText, time: timeString }];
+    const isFirstUserMessage = messages.filter(m => m.role === "user").length === 0;
+    const newTitle = isFirstUserMessage ? (suggestionText.length > 12 ? suggestionText.slice(0, 12) + "..." : suggestionText) : currentSession.title;
+
+    setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, title: newTitle, messages: updatedMessages } : s));
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: suggestionText, history: updatedMessages }),
+      });
+
+      const data = await response.json();
+      const aiReply = data.reply || "エラーが発生しました。";
+
+      const finalMessages: any[] = [
+        ...updatedMessages,
+        { 
+          role: "ai", 
+          content: aiReply, 
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          sheetData: data.sheetData
+        }
+      ];
+      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: finalMessages } : s));
+    } catch (error) {
+      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: [...updatedMessages, { role: "ai", content: "通信に失敗しました。もう一度お試しください。", time: "" }] } : s));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const filteredSessions = sessions.filter(session => {
     const query = searchQuery.toLowerCase().trim();
@@ -188,6 +230,130 @@ export default function Page() {
     const matchTag = session.tag ? session.tag.toLowerCase().includes(query) : false;
     return matchTitle || matchTag;
   });
+
+  const isGisMode = currentSession?.title?.includes("役所調査") || messages.some(m => m.content.includes("役所調査"));
+　
+  
+  // =========================================
+  // ★ 新規追加：ログイン / 新規登録 画面（画像デザイン完全踏襲）
+  // =========================================
+  if (authState === "login") {
+
+    
+
+    return (
+      <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col items-center justify-center p-4 font-sans text-gray-800">
+        <div className="text-center mb-8 space-y-1">
+          <div className="flex items-center justify-center gap-2 text-2xl font-black text-[#1a365d]">
+            <img src="/logo.png" alt="logo" className="w-7 h-7 object-contain" />
+            Prop-Station
+          </div>
+          <p className="text-xs text-gray-400 font-bold tracking-wider">不動産書類作成AIアシスタント</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-100/40 p-8 max-w-[440px] w-full space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight">ログイン</h2>
+            <p className="text-xs text-gray-400 font-medium">アカウントにサインインしてください</p>
+          </div>
+
+          <div className="space-y-4 text-left">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">メールアドレス <span className="text-red-500">*</span></label>
+              <input type="email" placeholder="you@example.com" defaultValue="suzuki.ichiro@treylink.co.jp" className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-gray-800 font-medium" />
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-xs font-bold text-gray-700">パスワード <span className="text-red-500">*</span></label>
+                <a href="#" className="text-xs font-bold text-blue-600 hover:underline">パスワードをお忘れですか？</a>
+              </div>
+              <div className="relative">
+                <input type="password" placeholder="••••••••" defaultValue="password123" className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-gray-800 tracking-widest" />
+                <span className="absolute right-4 top-3.5 text-gray-400 text-sm cursor-pointer">👁️</span>
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-xs font-bold text-gray-500 cursor-pointer pt-1">
+              <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4" />
+              ログイン状態を保持する
+            </label>
+          </div>
+
+          <button 
+            onClick={() => setAuthState("authenticated")} 
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-100 transition-all cursor-pointer text-center"
+          >
+            ログイン
+          </button>
+
+          <div className="text-center text-xs font-bold text-gray-400 pt-2">
+            アカウントをお持ちでない方は{" "}
+            <button onClick={() => setAuthState("register")} className="text-blue-600 hover:underline cursor-pointer">新規登録</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (authState === "register") {
+    return (
+      <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col items-center justify-center p-4 font-sans text-gray-800">
+        <div className="text-center mb-8 space-y-1">
+          <div className="flex items-center justify-center gap-2 text-2xl font-black text-[#1a365d]">
+            <img src="/logo.png" alt="logo" className="w-7 h-7 object-contain" />
+            Prop-Station
+          </div>
+          <p className="text-xs text-gray-400 font-bold tracking-wider">不動産書類作成AIアシスタント</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-100/40 p-8 max-w-[440px] w-full space-y-5">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight">新規登録</h2>
+            <p className="text-xs text-gray-400 font-medium">アカウントを作成してください</p>
+          </div>
+
+          <div className="space-y-3.5 text-left">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">お名前 <span className="text-red-500">*</span></label>
+              <input type="text" placeholder="山田 太郎" className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-gray-800 font-medium" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">メールアドレス <span className="text-red-500">*</span></label>
+              <input type="email" placeholder="you@example.com" className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-gray-800 font-medium" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">パスワード <span className="text-red-500">*</span></label>
+              <p className="text-[10px] text-gray-400 font-semibold mb-1.5">8文字以上、大文字・数字を各1文字以上含めてください</p>
+              <div className="relative">
+                <input type="password" placeholder="••••••••" className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-gray-800 tracking-widest" />
+                <span className="absolute right-4 top-3.5 text-gray-400 text-sm cursor-pointer">👁️</span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">パスワード（確認） <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <input type="password" placeholder="••••••••" className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all text-gray-800 tracking-widest" />
+                <span className="absolute right-4 top-3.5 text-gray-400 text-sm cursor-pointer">👁️</span>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            onClick={() => setAuthState("authenticated")} 
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-100 transition-all cursor-pointer text-center mt-2"
+          >
+            アカウントを作成
+          </button>
+
+          <div className="text-center text-xs font-bold text-gray-400 pt-1">
+            すでにアカウントをお持ちの方は{" "}
+            <button onClick={() => setAuthState("login")} className="text-blue-600 hover:underline cursor-pointer">ログイン</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  // === ここまで追加 ===
+
 
   return (
     <div className="flex h-screen w-full bg-[#f4f7f9] text-gray-800 font-sans overflow-hidden">
@@ -437,7 +603,18 @@ export default function Page() {
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                   )}
-                  <h2 className="font-bold text-gray-800 text-sm sm:text-base truncate">{currentSession.title}</h2>
+                 {/* チャットタイトル */}
+          <div className="flex items-center gap-2">
+            <h2 className="font-extrabold text-gray-800 text-sm md:text-base tracking-tight truncate max-w-[180px] md:max-w-[320px]">
+              {currentSession.title}
+            </h2>
+            {/* ★ 新規追加：役所調査モードの時だけ上部に緑のバッジを点灯させる */}
+            {isGisMode && (
+              <span className="text-[10px] md:text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-lg flex items-center gap-1 shrink-0 animate-pulse">
+                🏢 役所調査モード中
+              </span>
+            )}
+          </div>
                 </div>
               </header>
             )}
@@ -468,11 +645,13 @@ export default function Page() {
                       placeholder="お手伝いできることはありますか？（Enterキーで送信）"
                       className="flex-1 bg-transparent border-none outline-none px-4 py-3 text-gray-800 placeholder-gray-400 text-sm md:text-base font-['Zen_Maru_Gothic',_'Hiragino_Maru_Gothic_ProN',_sans-serif]"
                     />
+
+                    
                     <button
-                      onClick={handleSend}
-                      disabled={!input.trim()}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all mr-1 shadow-sm ${!input.trim() ? "bg-[#1e3a8a] opacity-50 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"}`}
-                    >
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className={`p-2.5 rounded-2xl text-white shadow-md transition-all shrink-0 ${input.trim() && !isLoading ? (isGisMode ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 cursor-pointer" : "bg-blue-600 hover:bg-blue-700 shadow-blue-100 cursor-pointer") : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
+            >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
                     </button>
                   </div>
@@ -510,12 +689,37 @@ export default function Page() {
                               ? msg.content.replace(/\*\*/g, "").replace(/^\s*[\*\-]\s+/gm, "・ ").replace(/#/g, "")
                               : msg.content}
                           </div>
-                          {msg.role === "ai" && msg.sheetData && (
-                            <button onClick={() => { setActiveSheetData(msg.sheetData); setIsSheetModalOpen(true); }} className="mt-2 flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-100 transition-all cursor-pointer">
-                              📋 役所調査シートを見る
-                            </button>
-                          )}
-                          <span className="text-xs text-gray-400 mt-2 mx-1">{msg.time}</span>
+                        {/* ★ 修正：msg.sheetData だけでなく、本当に物件情報(objectInfo)が生成されている時だけシートボタンを出す */}
+                  {msg.role === "ai" && msg.sheetData && msg.sheetData.objectInfo && (
+                    <button 
+                      onClick={() => {
+                        setActiveSheetData(msg.sheetData);
+                        setIsSheetModalOpen(true);
+                      }}
+                      className="mt-2 flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-100 transition-all cursor-pointer"
+                    >
+                      📋 役所調査シートを見る
+                    </button>
+                  )}
+
+                {/* サジェストチップの表示エリア */}
+                  {msg.role === "ai" && msg.sheetData?.suggestedQuestions && msg.sheetData.suggestedQuestions.length > 0 && (
+                    <div className="mt-2.5 flex flex-col gap-2 max-w-xl font-['Zen_Maru_Gothic',_sans-serif]">
+                      {msg.sheetData.suggestedQuestions.map((qText: string, qIdx: number) => (
+                        <button
+                          key={qIdx}
+                          onClick={() => handleSuggestionClick(qText)}
+                          disabled={isLoading}
+                          className="px-3 py-2 bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 text-xs font-bold rounded-xl border border-gray-200/60 hover:border-blue-200 transition-all shadow-xs shrink-0 cursor-pointer text-left w-full whitespace-normal break-all disabled:opacity-50 disabled:cursor-not-allowed flex items-start gap-1.5"
+                        >
+                          <span className="shrink-0">💡</span>
+                          <span>{qText}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <span className="text-xs text-gray-400 mt-2 mx-1">{msg.time}</span>
                         </div>
                       </div>
                     ))}
@@ -623,9 +827,20 @@ export default function Page() {
                 </button>
               </div>
 
+              {/* ★ 新規追加：ログアウトボタン（赤背景・白文字） */}
+              <button 
+                onClick={() => {
+                  setIsProfileModalOpen(false); // モーダルを閉じる
+                  setAuthState("login"); // ログイン画面へ戻す
+                }} 
+                className="w-full mt-3 py-3 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-2xl shadow-md shadow-red-100 transition-all cursor-pointer text-center"
+              >
+                ログアウト
+              </button>
+              </div>
+
             </div>
           </div>
-        </div>
       )}
 
       {/* チャット設定編集ポップアップ */}
