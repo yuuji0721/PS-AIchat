@@ -232,20 +232,17 @@ export default function Page() {
   });
 
   const isGisMode = currentSession?.title?.includes("役所調査") || messages.some(m => m.content.includes("役所調査"));
-　
+  
   
   // =========================================
-  // ★ 新規追加：ログイン / 新規登録 画面（画像デザイン完全踏襲）
+  // ★ ログイン 画面（★修正：画像パスを /logo.webp に変更）
   // =========================================
   if (authState === "login") {
-
-    
-
     return (
       <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col items-center justify-center p-4 font-sans text-gray-800">
         <div className="text-center mb-8 space-y-1">
           <div className="flex items-center justify-center gap-2 text-2xl font-black text-[#1a365d]">
-            <img src="/logo.png" alt="logo" className="w-7 h-7 object-contain" />
+            <img src="/logo.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
             Prop-Station
           </div>
           <p className="text-xs text-gray-400 font-bold tracking-wider">不動産書類作成AIアシスタント</p>
@@ -294,12 +291,15 @@ export default function Page() {
     );
   }
 
+  // =========================================
+  // ★ 新規登録 画面（★修正：画像パスを /logo.webp に変更）
+  // =========================================
   if (authState === "register") {
     return (
       <div className="min-h-screen w-full bg-[#f8fafc] flex flex-col items-center justify-center p-4 font-sans text-gray-800">
         <div className="text-center mb-8 space-y-1">
           <div className="flex items-center justify-center gap-2 text-2xl font-black text-[#1a365d]">
-            <img src="/logo.png" alt="logo" className="w-7 h-7 object-contain" />
+            <img src="/logo.webp" alt="logo" className="w-7 h-7 object-contain" />
             Prop-Station
           </div>
           <p className="text-xs text-gray-400 font-bold tracking-wider">不動産書類作成AIアシスタント</p>
@@ -352,14 +352,13 @@ export default function Page() {
       </div>
     );
   }
-  // === ここまで追加 ===
 
 
   return (
     <div className="flex h-screen w-full bg-[#f4f7f9] text-gray-800 font-sans overflow-hidden">
       
       {/* =========================================
-          サイドバー
+          サイドバー（★修正：画像パスを /logo.webp に統一）
       ========================================= */}
       <aside className={`
         fixed md:relative z-50 inset-y-0 left-0 bg-white border-r border-gray-100 flex flex-col transition-all duration-300 ease-in-out overflow-hidden shrink-0
@@ -374,7 +373,7 @@ export default function Page() {
           
           {/* 左側のかたまり：ロゴとテキスト */}
           <div className="flex items-center gap-3.5">
-            <img src="/logo-only.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
+            <img src="/logo.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
             <div className="flex flex-col">
               <h1 className="font-bold text-[21px] tracking-tight leading-none">
                 <span className="text-blue-600">Prop</span><span className="text-[#1a365d]">-Station</span>
@@ -532,7 +531,7 @@ export default function Page() {
             </div>
           </>
         ) : (
-          /* サイドバーが閉じている時（Gemini風アイコンバー） */
+          /* サイドバーが閉じている時（Gemini風アイコンバー）★修正：画像パスを /logo.webp に変更 */
           <div className="flex flex-col h-full w-[72px] bg-white border-r border-gray-100 items-center py-4 justify-between">
             <div className="flex flex-col items-center gap-6 w-full">
               <button 
@@ -540,7 +539,7 @@ export default function Page() {
                 className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
                 title="サイドバーを開く"
               >
-                <img src="/logo-only.webp" alt="Prop-Station" className="w-7 h-7 object-contain" />
+                <img src="/logo.webp" alt="Prop-Station" className="w-7 h-7 object-contain" />
               </button>
 
               <div className="w-6 h-[1px] bg-gray-100"></div>
@@ -591,8 +590,19 @@ export default function Page() {
       {(() => {
         const isNewChat = messages.filter(m => m.role === "user").length === 0 && !isLoading && !currentSession.tag;
         const greetingText = `こんにちは、${userName}さん`;
+        
         return (
           <main className="flex-1 flex flex-col h-full relative min-w-0">
+
+            {/* 📱 スマホ・モバイル版限定：サイドバー開閉ボタン（★修正：正しいレンダリング位置に移動し、ロゴを /logo.webp に変更） */}
+            <header className="md:hidden fixed top-4 left-4 z-40">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-md border border-slate-100 active:scale-95 transition-transform cursor-pointer"
+              >
+                <img src="/logo.webp" alt="Prop-Station" className="w-8 h-8 object-contain" />
+              </button>
+            </header>
 
             {/* ヘッダー（新規チャット時は非表示） */}
             {!isNewChat && (
@@ -603,24 +613,24 @@ export default function Page() {
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                   )}
-                 {/* チャットタイトル */}
-          <div className="flex items-center gap-2">
-            <h2 className="font-extrabold text-gray-800 text-sm md:text-base tracking-tight truncate max-w-[180px] md:max-w-[320px]">
-              {currentSession.title}
-            </h2>
-            {/* ★ 新規追加：役所調査モードの時だけ上部に緑のバッジを点灯させる */}
-            {isGisMode && (
-              <span className="text-[10px] md:text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-lg flex items-center gap-1 shrink-0 animate-pulse">
-                🏢 役所調査モード中
-              </span>
-            )}
-          </div>
+                  {/* チャットタイトル */}
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-extrabold text-gray-800 text-sm md:text-base tracking-tight truncate max-w-[180px] md:max-w-[320px]">
+                      {currentSession.title}
+                    </h2>
+                    {/* ★ 新規追加：役所調査モードの時だけ上部に緑のバッジを点灯させる */}
+                    {isGisMode && (
+                      <span className="text-[10px] md:text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-lg flex items-center gap-1 shrink-0 animate-pulse">
+                        🏢 役所調査モード中
+                      </span>
+                    )}
+                  </div>
                 </div>
               </header>
             )}
 
             {isNewChat ? (
-              /* ========== 新規チャット: 中央寄せUI ========== */
+              /* ========== 新規チャット: 中央寄せUI（★修正：画像パスを /logo.webp に変更） ========== */
               <div className="flex-1 flex flex-col items-center justify-center px-4">
                 <div className="flex flex-col items-center mb-10 space-y-4">
                   <img src="/logo.webp" alt="Prop-Station" className="w-20 h-20 object-contain" />
@@ -648,10 +658,10 @@ export default function Page() {
 
                     
                     <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className={`p-2.5 rounded-2xl text-white shadow-md transition-all shrink-0 ${input.trim() && !isLoading ? (isGisMode ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 cursor-pointer" : "bg-blue-600 hover:bg-blue-700 shadow-blue-100 cursor-pointer") : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
-            >
+                      onClick={handleSend}
+                      disabled={!input.trim() || isLoading}
+                      className={`p-2.5 rounded-2xl text-white shadow-md transition-all shrink-0 ${input.trim() && !isLoading ? (isGisMode ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 cursor-pointer" : "bg-blue-600 hover:bg-blue-700 shadow-blue-100 cursor-pointer") : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
+                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
                     </button>
                   </div>
@@ -674,7 +684,7 @@ export default function Page() {
                 </div>
               </div>
             ) : (
-              /* ========== 継続チャット: 従来UI ========== */
+              /* ========== 継続チャット: 従来UI（★修正：画像パスを /logo.webp に変更） ========== */
               <>
                 <div className="flex-1 overflow-y-auto px-4 py-8">
                   <div className="max-w-4xl mx-auto space-y-6">
@@ -773,7 +783,7 @@ export default function Page() {
       })()}
 
       {/* =========================================
-          プロフィール編集ポップアップ（Googleアカウント風：バグ修正済）
+          プロフィール編集ポップアップ
       ========================================= */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -786,7 +796,6 @@ export default function Page() {
 
             <div className="px-8 pb-8 relative pt-24 flex flex-col items-center text-center">
               <div className="absolute -top-16 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                {/* ★ ここで呼び出している tempUserImage が正常に動作するようになりました */}
                 <div className="w-[110px] h-[110px] rounded-full border-4 border-white overflow-hidden shadow-md relative group cursor-pointer bg-white">
                   <img src={tempUserImage} alt="Profile" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center text-white transition-all">
@@ -827,7 +836,6 @@ export default function Page() {
                 </button>
               </div>
 
-              {/* ★ 新規追加：ログアウトボタン（赤背景・白文字） */}
               <button 
                 onClick={() => {
                   setIsProfileModalOpen(false); // モーダルを閉じる
@@ -867,13 +875,10 @@ export default function Page() {
         </div>
       )}
 
-      {/* =========================================
-          ★ 修正版：役所調査シート ポップアップ（A4ゴシック・見切れ完全対策版）
-      ========================================= */}
+      {/* 役所調査シート ポップアップ */}
       {isSheetModalOpen && activeSheetData && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 md:p-6 backdrop-blur-xs print:absolute print:inset-0 print:bg-white print:p-0">
           
-          {/* 💻 ブラウザの印刷エンジンに「ゴシック体」「A4縦」「上下余白」を強制する魔法のスタイル */}
           <style dangerouslySetInnerHTML={{__html: `
             @media print {
               html, body { background: #fff !important; color: #000 !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif !important; }
@@ -884,7 +889,6 @@ export default function Page() {
 
           <div className="bg-white rounded-none md:rounded-[24px] w-full h-full md:max-w-4xl md:h-[90vh] flex flex-col shadow-2xl overflow-hidden print:overflow-visible print:shadow-none print:rounded-none print:h-auto print:max-w-none print:absolute print:top-0 print:left-0">
             
-            {/* ポップアップのヘッダー（印刷時は自動非表示） */}
             <div className="h-[72px] px-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0 print:hidden">
               <div className="flex items-center gap-2">
                 <span className="text-xl">📋</span>
@@ -907,10 +911,8 @@ export default function Page() {
             </div>
             
 
-            {/* 書類の中身（A4印刷に100%最適化したデザイン） */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 text-gray-900 bg-white print:overflow-visible print:p-0 font-serif selection:bg-transparent">
               
-              {/* 書類タイトル */}
               <div className="text-center space-y-1 border-b-2 border-gray-800 pb-3">
                 <h2 className="text-xl md:text-2xl font-black tracking-wider">役所調査シート（調査・入力用テンプレート）</h2>
                 <div className="flex justify-between text-xs font-bold text-gray-500 pt-1">
@@ -963,7 +965,6 @@ export default function Page() {
               <div className="space-y-2 pt-2">
                 <h4 className="text-sm font-black border-l-4 border-gray-800 pl-2">2. 都市計画・地域地区制限</h4>
                 <div className="border border-gray-400 p-3 rounded-none text-xs space-y-3">
-                  {/* 区域区分 */}
                   <div className="flex flex-wrap gap-x-6 gap-y-1">
                     <span className="font-bold">［区域区分］：</span>
                     <label className="flex items-center gap-1"><input type="checkbox" checked={activeSheetData.urbanPlanning?.areaClassification?.includes("市街化区域")} readOnly /> 市街化区域</label>
@@ -977,19 +978,17 @@ export default function Page() {
                     <label className="flex items-center gap-1"><input type="checkbox" checked={activeSheetData.urbanPlanning?.facilities && !activeSheetData.urbanPlanning?.facilities?.includes("無")} readOnly /> 有（状況：未完了 ・ 完了）</label>
                   </div>
 
-                  {/* 都市計画道路 */}
                   <div className="bg-gray-50 p-2 border border-gray-200 space-y-1.5">
                     <div className="flex flex-wrap gap-x-4">
                       <span className="font-bold">［都市計画道路（1本目）］：</span>
                       <label className="flex items-center gap-1"><input type="checkbox" checked={activeSheetData.urbanPlanning?.road?.includes("無") || !activeSheetData.urbanPlanning?.road} readOnly /> 無</label>
-                      <label className="flex items-center gap-1"><input type="checkbox" checked={activeSheetData.urbanPlanning?.road && !activeSheetData.urbanPlanning?.road?.includes("無")} readOnly /> 有 ➔ 位置：（敷地内・隣接・近隣）</label>
+                      <label className="flex items-center gap-1"><input type="checkbox" checked={activeSheetData.urbanPlanning?.road && !activeSheetData.urbanPlanning?.road?.includes("無")} readOnly /> 有 ➔ 位置：（敷地内・隣接・近遠）</label>
                     </div>
                     <div className="text-gray-600 pl-2">
                       名称・番号：<span className="underline font-bold px-1 text-gray-900">{activeSheetData.urbanPlanning?.road || "ーーー"}</span>
                     </div>
                   </div>
 
-                  {/* 用途地域等の一覧テーブル */}
                   <table className="w-full border-collapse border border-gray-400 text-left mt-2">
                     <thead>
                       <tr className="bg-gray-50 text-center font-bold">
@@ -1047,7 +1046,6 @@ export default function Page() {
 
               {/* 4. 道路状況 ＆ 5. ハザード情報 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 print:grid-cols-2">
-                {/* 道路状況 */}
                 <div className="space-y-2">
                   <h4 className="text-sm font-black border-l-4 border-gray-800 pl-2">4. 道路状況（1本目）</h4>
                   <table className="w-full border-collapse border border-gray-400 text-xs text-left">
@@ -1068,7 +1066,6 @@ export default function Page() {
                   </table>
                 </div>
 
-                {/* ハザード情報 */}
                 <div className="space-y-2">
                   <h4 className="text-sm font-black border-l-4 border-gray-800 pl-2">5. 環境・ハザード情報</h4>
                   <table className="w-full border-collapse border border-gray-400 text-xs text-left">
